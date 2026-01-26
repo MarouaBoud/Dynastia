@@ -30,6 +30,7 @@ interface AuthContextType {
   signIn: (accessToken: string, refreshToken: string, user: User) => Promise<void>;
   signUp: (accessToken: string, refreshToken: string, user: User) => Promise<void>;
   signOut: () => Promise<void>;
+  restoreSession: () => Promise<void>;
   require2FA: (userId: string) => void;
   clear2FARequirement: () => void;
 }
@@ -138,6 +139,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         dispatch({ type: 'SIGN_OUT' });
       } catch (error) {
         console.error('Sign out error:', error);
+        throw error;
+      }
+    },
+    restoreSession: async () => {
+      try {
+        const accessToken = await storage.getAccessToken();
+        const user = (await storage.getUser()) as User | null;
+
+        if (accessToken && user) {
+          dispatch({ type: 'SIGN_IN', token: accessToken, user });
+        } else {
+          throw new Error('No session to restore');
+        }
+      } catch (error) {
+        console.error('Restore session error:', error);
         throw error;
       }
     },

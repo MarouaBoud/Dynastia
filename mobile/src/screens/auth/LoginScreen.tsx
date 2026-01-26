@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import * as authService from '../../services/auth.service';
+import * as biometrics from '../../utils/biometrics';
+import * as storage from '../../services/storage.service';
 
 interface LoginScreenProps {
   navigation: any;
@@ -21,7 +23,75 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, require2FA } = useAuth();
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricType, setBiometricType] = useState<string>('');
+  const [showBiometric, setShowBiometric] = useState(false);
+  const { signIn, require2FA, restoreSession } = useAuth();
+
+  useEffect(() => {
+    checkBiometricAvailability();
+  }, []);
+
+  const checkBiometricAvailability = async () => {
+    try {
+      // Check if user has existing token
+      const existingToken = await storage.getAccessToken();
+      const user = await storage.getUser();
+
+      if (!existingToken || !user) {
+        // No existing session, don't show biometric option
+        return;
+      }
+
+      // Check if biometrics are enabled for this user
+      const userId = (user as any).id;
+      const isEnabled = await biometrics.isBiometricEnabled(userId);
+
+      if (!isEnabled) {
+        // Biometrics not enabled, don't show option
+        return;
+      }
+
+      // Check device capability
+      const capability = await biometrics.getBiometricCapability();
+
+      if (capability.available && capability.types.length > 0) {
+        setBiometricAvailable(true);
+        setBiometricType(capability.types[0]);
+        setShowBiometric(true);
+      }
+    } catch (error) {
+      console.error('Error checking biometric availability:', error);
+    }
+  };
+
+  const handleBiometricUnlock = async () => {
+    setLoading(true);
+    try {
+      const success = await biometrics.authenticateWithBiometrics();
+
+      if (success) {
+        // Biometric authentication successful - restore session from SecureStore
+        await restoreSession();
+      } else {
+        // Biometric authentication failed - show password form with emotionally safe message
+        setShowBiometric(false);
+        Alert.alert(
+          'Alternative Login',
+          "We couldn't verify your biometrics. Let's use your password instead."
+        );
+      }
+    } catch (error) {
+      console.error('Biometric unlock error:', error);
+      setShowBiometric(false);
+      Alert.alert(
+        'Alternative Login',
+        "We couldn't verify your biometrics. Let's use your password instead."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -60,6 +130,34 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
       <View style={styles.content}>
         <Text style={styles.title}>Welcome Back</Text>
         <Text style={styles.subtitle}>Log in to continue your wealth journey</Text>
+
+        {showBiometric && biometricAvailable ? (
+          // Show biometric unlock option
+          <>
+            <TouchableOpacity
+              style={[styles.biometricButton, loading && styles.buttonDisabled]}
+              onPress={handleBiometricUnlock}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#007AFF" />
+              ) : (
+                <>
+                  <Text style={styles.biometricIcon}>🔐</Text>
+                  <Text style={styles.biometricButtonText}>
+                    Unlock with {biometricType}
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or use password</Text>
+              <View style={styles.dividerLine} />
+            </View>
+          </>
+        ) : null}
 
         <TextInput
           style={styles.input}
@@ -157,5 +255,40 @@ const styles = StyleSheet.create({
   linkText: {
     color: '#007AFF',
     fontSize: 16,
+  },
+  biometricButton: {
+    height: 56,
+    backgroundColor: '#f0f8ff',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#007AFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    flexDirection: 'row',
+  },
+  biometricIcon: {
+    fontSize: 24,
+    marginRight: 8,
+  },
+  biometricButtonText: {
+    color: '#007AFF',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 16,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#ddd',
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    color: '#999',
+    fontSize: 14,
   },
 });
