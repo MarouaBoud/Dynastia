@@ -61,7 +61,6 @@ export default function RootNavigator() {
         <Stack.Navigator
           screenOptions={{
             headerShown: true,
-            headerBackTitleVisible: false,
           }}
         >
           <Stack.Screen

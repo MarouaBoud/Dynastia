@@ -166,7 +166,4 @@ const styles = StyleSheet.create({
   },
 });
 
-/**
- * Export type for use in other components
- */
-export type { EmotionalTextProps };
+// EmotionalTextProps already exported above

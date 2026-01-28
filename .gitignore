@@ -1,0 +1,22 @@
+# Planning & AI
+.planning/
+project.md
+CLAUDE.md
+
+# Environment files (NEVER commit)
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
