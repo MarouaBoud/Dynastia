@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import * as storage from '../services/storage.service';
+import { User as UserProfile } from '../services/users.service';
 
 interface User {
   id: string;
@@ -7,6 +8,8 @@ interface User {
   firstName?: string;
   lastName?: string;
   has2FAEnabled?: boolean;
+  country?: string | null;
+  currency?: string | null;
 }
 
 interface AuthState {
@@ -23,7 +26,8 @@ type AuthAction =
   | { type: 'SIGN_IN'; token: string; user: User }
   | { type: 'SIGN_OUT' }
   | { type: 'REQUIRE_2FA'; userId: string }
-  | { type: 'CLEAR_2FA_REQUIREMENT' };
+  | { type: 'CLEAR_2FA_REQUIREMENT' }
+  | { type: 'UPDATE_USER'; user: User };
 
 interface AuthContextType {
   state: AuthState;
@@ -33,6 +37,8 @@ interface AuthContextType {
   restoreSession: () => Promise<void>;
   require2FA: (userId: string) => void;
   clear2FARequirement: () => void;
+  setUser: (user: User) => Promise<void>;
+  user: User | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -76,6 +82,11 @@ const authReducer = (prevState: AuthState, action: AuthAction): AuthState => {
         requires2FA: false,
         tempUserId: null,
       };
+    case 'UPDATE_USER':
+      return {
+        ...prevState,
+        user: action.user,
+      };
   }
 };
 
@@ -112,6 +123,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const authContext: AuthContextType = {
     state,
+    user: state.user,
     signIn: async (accessToken: string, refreshToken: string, user: User) => {
       try {
         await storage.saveTokens(accessToken, refreshToken);
@@ -162,6 +174,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     },
     clear2FARequirement: () => {
       dispatch({ type: 'CLEAR_2FA_REQUIREMENT' });
+    },
+    setUser: async (user: User) => {
+      try {
+        await storage.saveUser(user);
+        dispatch({ type: 'UPDATE_USER', user });
+      } catch (error) {
+        console.error('Update user error:', error);
+        throw error;
+      }
     },
   };
 
