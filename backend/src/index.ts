@@ -15,6 +15,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import * as dotenv from 'dotenv';
 import authRoutes from './routes/auth';
+import usersRoutes from './routes/users';
 import transactionsRoutes from './routes/transactions';
 import assetsRoutes from './routes/assets';
 import liabilitiesRoutes from './routes/liabilities';
@@ -41,6 +42,7 @@ app.get('/health', (req: Request, res: Response) => {
 
 // Mount routes
 app.use('/api/auth', authRoutes);
+app.use('/api/users', usersRoutes);
 app.use('/api/transactions', transactionsRoutes);
 app.use('/api/assets', assetsRoutes);
 app.use('/api/liabilities', liabilitiesRoutes);
@@ -66,6 +68,9 @@ app.listen(PORT, () => {
   console.log('     POST /api/auth/2fa/enable (protected)');
   console.log('     POST /api/auth/2fa/verify');
   console.log('     POST /api/auth/2fa/disable (protected)');
+  console.log('   Users:');
+  console.log('     GET  /api/users/me (protected)');
+  console.log('     PATCH /api/users/me (protected)');
   console.log('   Transactions:');
   console.log('     POST /api/transactions (protected)');
   console.log('     GET  /api/transactions (protected)');
