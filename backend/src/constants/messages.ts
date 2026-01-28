@@ -152,9 +152,9 @@ export const DATA_MESSAGES = {
   // Update errors
   updateFailed: "We couldn't save your changes. Let's try again.",
   versionConflict:
-    'Someone else updated this while you were editing. Let's refresh and try again.',
+    "Someone else updated this while you were editing. Let's refresh and try again.",
   optimisticLockFailed:
-    'This was updated elsewhere. Let's refresh and see the latest version.',
+    "This was updated elsewhere. Let's refresh and see the latest version.",
 
   // Delete errors
   deleteFailed: "We couldn't delete that. Let's try again.",

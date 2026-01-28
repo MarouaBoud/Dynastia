@@ -123,7 +123,7 @@ export async function getTransactions(req: Request, res: Response): Promise<void
 export async function getTransaction(req: Request, res: Response): Promise<void> {
   try {
     const userId = req.user?.userId;
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     if (!userId) {
       res.status(401).json({ error: 'To keep your account secure, please log in again' });
@@ -160,7 +160,7 @@ export async function getTransaction(req: Request, res: Response): Promise<void>
 export async function updateTransaction(req: Request, res: Response): Promise<void> {
   try {
     const userId = req.user?.userId;
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { amount, merchant, date, category, description, notes, receiptUrl } = req.body;
 
     if (!userId) {
@@ -210,7 +210,7 @@ export async function updateTransaction(req: Request, res: Response): Promise<vo
 export async function deleteTransaction(req: Request, res: Response): Promise<void> {
   try {
     const userId = req.user?.userId;
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     if (!userId) {
       res.status(401).json({ error: 'To keep your account secure, please log in again' });

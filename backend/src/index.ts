@@ -15,6 +15,10 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import * as dotenv from 'dotenv';
 import authRoutes from './routes/auth';
+import transactionsRoutes from './routes/transactions';
+import assetsRoutes from './routes/assets';
+import liabilitiesRoutes from './routes/liabilities';
+import networthRoutes from './routes/networth';
 
 // Load environment variables
 dotenv.config();
@@ -37,6 +41,10 @@ app.get('/health', (req: Request, res: Response) => {
 
 // Mount routes
 app.use('/api/auth', authRoutes);
+app.use('/api/transactions', transactionsRoutes);
+app.use('/api/assets', assetsRoutes);
+app.use('/api/liabilities', liabilitiesRoutes);
+app.use('/api/networth', networthRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
@@ -49,15 +57,33 @@ app.use((req: Request, res: Response) => {
 app.listen(PORT, () => {
   console.log(`🚀 Dynastia Backend API is running on port ${PORT}`);
   console.log(`   Health check: http://localhost:${PORT}/health`);
-  console.log(`   Auth endpoints: http://localhost:${PORT}/api/auth/*`);
   console.log('');
   console.log('Available endpoints:');
-  console.log('   POST /api/auth/signup');
-  console.log('   POST /api/auth/login');
-  console.log('   POST /api/auth/refresh');
-  console.log('   POST /api/auth/2fa/enable (protected)');
-  console.log('   POST /api/auth/2fa/verify');
-  console.log('   POST /api/auth/2fa/disable (protected)');
+  console.log('   Auth:');
+  console.log('     POST /api/auth/signup');
+  console.log('     POST /api/auth/login');
+  console.log('     POST /api/auth/refresh');
+  console.log('     POST /api/auth/2fa/enable (protected)');
+  console.log('     POST /api/auth/2fa/verify');
+  console.log('     POST /api/auth/2fa/disable (protected)');
+  console.log('   Transactions:');
+  console.log('     POST /api/transactions (protected)');
+  console.log('     GET  /api/transactions (protected)');
+  console.log('     GET  /api/transactions/:id (protected)');
+  console.log('     PUT  /api/transactions/:id (protected)');
+  console.log('     DELETE /api/transactions/:id (protected)');
+  console.log('   Assets:');
+  console.log('     POST /api/assets (protected)');
+  console.log('     GET  /api/assets (protected)');
+  console.log('     PUT  /api/assets/:id (protected)');
+  console.log('     DELETE /api/assets/:id (protected)');
+  console.log('   Liabilities:');
+  console.log('     POST /api/liabilities (protected)');
+  console.log('     GET  /api/liabilities (protected)');
+  console.log('     PUT  /api/liabilities/:id (protected)');
+  console.log('     DELETE /api/liabilities/:id (protected)');
+  console.log('   Net Worth:');
+  console.log('     GET  /api/networth (protected)');
 });
 
 // Graceful shutdown

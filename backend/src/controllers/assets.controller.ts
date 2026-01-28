@@ -105,7 +105,7 @@ export async function getAssets(req: Request, res: Response): Promise<void> {
 export async function updateAsset(req: Request, res: Response): Promise<void> {
   try {
     const userId = req.user?.userId;
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { type, name, value } = req.body;
 
     if (!userId) {
@@ -159,7 +159,7 @@ export async function updateAsset(req: Request, res: Response): Promise<void> {
 export async function deleteAsset(req: Request, res: Response): Promise<void> {
   try {
     const userId = req.user?.userId;
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     if (!userId) {
       res.status(401).json({ error: 'To keep your account secure, please log in again' });

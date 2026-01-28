@@ -105,7 +105,7 @@ export async function getLiabilities(req: Request, res: Response): Promise<void>
 export async function updateLiability(req: Request, res: Response): Promise<void> {
   try {
     const userId = req.user?.userId;
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { type, name, balance } = req.body;
 
     if (!userId) {
@@ -159,7 +159,7 @@ export async function updateLiability(req: Request, res: Response): Promise<void
 export async function deleteLiability(req: Request, res: Response): Promise<void> {
   try {
     const userId = req.user?.userId;
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     if (!userId) {
       res.status(401).json({ error: 'To keep your account secure, please log in again' });
