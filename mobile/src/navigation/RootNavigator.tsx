@@ -19,6 +19,13 @@ import { TransactionListScreen } from '../screens/transactions/TransactionListSc
 import { AddTransactionScreen } from '../screens/transactions/AddTransactionScreen';
 import { TransactionDetailScreen } from '../screens/transactions/TransactionDetailScreen';
 
+// Net Worth screens
+import { NetWorthDashboard } from '../screens/networth/NetWorthDashboard';
+import { AddAssetScreen } from '../screens/networth/AddAssetScreen';
+import { AddLiabilityScreen } from '../screens/networth/AddLiabilityScreen';
+import { AssetDetailScreen } from '../screens/networth/AssetDetailScreen';
+import { LiabilityDetailScreen } from '../screens/networth/LiabilityDetailScreen';
+
 const Stack = createNativeStackNavigator();
 
 /**
@@ -95,6 +102,43 @@ export default function RootNavigator() {
             component={TransactionDetailScreen}
             options={{
               title: 'Transaction Details',
+            }}
+          />
+          <Stack.Screen
+            name="NetWorthDashboard"
+            component={NetWorthDashboard}
+            options={{
+              title: 'Net Worth',
+            }}
+          />
+          <Stack.Screen
+            name="AddAsset"
+            component={AddAssetScreen}
+            options={{
+              title: 'Add Asset',
+              presentation: 'modal',
+            }}
+          />
+          <Stack.Screen
+            name="AddLiability"
+            component={AddLiabilityScreen}
+            options={{
+              title: 'Add Liability',
+              presentation: 'modal',
+            }}
+          />
+          <Stack.Screen
+            name="AssetDetail"
+            component={AssetDetailScreen}
+            options={{
+              title: 'Asset Details',
+            }}
+          />
+          <Stack.Screen
+            name="LiabilityDetail"
+            component={LiabilityDetailScreen}
+            options={{
+              title: 'Liability Details',
             }}
           />
           <Stack.Screen
