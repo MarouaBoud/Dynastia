@@ -24,6 +24,13 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         </Text>
 
         <TouchableOpacity
+          style={styles.primaryButton}
+          onPress={() => navigation.navigate('TransactionList')}
+        >
+          <Text style={styles.primaryButtonText}>View Transactions</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={styles.settingsButton}
           onPress={() => navigation.navigate('SecuritySettings')}
         >
@@ -61,6 +68,20 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 48,
     textAlign: 'center',
+  },
+  primaryButton: {
+    width: '100%',
+    height: 56,
+    backgroundColor: '#6366F1',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  primaryButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
   },
   settingsButton: {
     width: '100%',

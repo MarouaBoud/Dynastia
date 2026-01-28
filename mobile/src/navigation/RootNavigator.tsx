@@ -14,6 +14,11 @@ import HomeScreen from '../screens/app/HomeScreen';
 import SecuritySettingsScreen from '../screens/app/SecuritySettingsScreen';
 import TwoFactorSetupScreen from '../screens/auth/TwoFactorSetupScreen';
 
+// Transaction screens
+import { TransactionListScreen } from '../screens/transactions/TransactionListScreen';
+import { AddTransactionScreen } from '../screens/transactions/AddTransactionScreen';
+import { TransactionDetailScreen } from '../screens/transactions/TransactionDetailScreen';
+
 const Stack = createNativeStackNavigator();
 
 /**
@@ -68,6 +73,28 @@ export default function RootNavigator() {
             component={HomeScreen}
             options={{
               headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="TransactionList"
+            component={TransactionListScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="AddTransaction"
+            component={AddTransactionScreen}
+            options={{
+              title: 'Add Transaction',
+              presentation: 'modal',
+            }}
+          />
+          <Stack.Screen
+            name="TransactionDetail"
+            component={TransactionDetailScreen}
+            options={{
+              title: 'Transaction Details',
             }}
           />
           <Stack.Screen
