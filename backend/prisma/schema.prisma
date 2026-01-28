@@ -11,12 +11,76 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid()) @db.Uuid
-  email        String   @unique @db.VarChar(255)
-  passwordHash String   @db.VarChar(255)
-  totpSecret   String?  @db.VarChar(255)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id               String              @id @default(uuid()) @db.Uuid
+  email            String              @unique @db.VarChar(255)
+  passwordHash     String              @db.VarChar(255)
+  totpSecret       String?             @db.VarChar(255)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  transactions     Transaction[]
+  assets           Asset[]
+  liabilities      Liability[]
+  netWorthSnapshots NetWorthSnapshot[]
 
   @@map("users")
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  amount      Decimal  @db.Decimal(19, 4)
+  merchant    String   @db.VarChar(255)
+  description String?  @db.Text
+  date        DateTime
+  category    String   @db.VarChar(50)
+  notes       String?  @db.Text
+  receiptUrl  String?  @db.VarChar(500)
+  userId      String   @db.Uuid
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId, date])
+  @@map("transactions")
+}
+
+model Asset {
+  id        String   @id @default(cuid())
+  type      String   @db.VarChar(50)
+  name      String   @db.VarChar(255)
+  value     Decimal  @db.Decimal(19, 4)
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("assets")
+}
+
+model Liability {
+  id        String   @id @default(cuid())
+  type      String   @db.VarChar(50)
+  name      String   @db.VarChar(255)
+  balance   Decimal  @db.Decimal(19, 4)
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("liabilities")
+}
+
+model NetWorthSnapshot {
+  id               String   @id @default(cuid())
+  date             DateTime
+  totalAssets      Decimal  @db.Decimal(19, 4)
+  totalLiabilities Decimal  @db.Decimal(19, 4)
+  netWorth         Decimal  @db.Decimal(19, 4)
+  userId           String   @db.Uuid
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId, date])
+  @@map("networth_snapshots")
 }
