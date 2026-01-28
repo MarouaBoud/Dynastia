@@ -9,6 +9,9 @@ import LoginScreen from '../screens/auth/LoginScreen';
 import SignupScreen from '../screens/auth/SignupScreen';
 import TwoFactorScreen from '../screens/auth/TwoFactorScreen';
 
+// Onboarding screens
+import CountryDetectionScreen from '../screens/onboarding/CountryDetectionScreen';
+
 // App screens
 import HomeScreen from '../screens/app/HomeScreen';
 import SecuritySettingsScreen from '../screens/app/SecuritySettingsScreen';
@@ -29,16 +32,17 @@ import { LiabilityDetailScreen } from '../screens/networth/LiabilityDetailScreen
 const Stack = createNativeStackNavigator();
 
 /**
- * RootNavigator implements 3-state conditional navigation:
+ * RootNavigator implements 4-state conditional navigation:
  * 1. Loading: Show splash screen while restoring token
  * 2. Unauthenticated: Show auth stack (Login, Signup) OR 2FA verification
- * 3. Authenticated: Show app stack (Home, Settings, etc.)
+ * 3. Onboarding: Show country detection for new users without country set
+ * 4. Authenticated: Show app stack (Home, Settings, etc.)
  *
  * This pattern avoids manual navigation between auth/app stacks which causes errors.
  * State changes in AuthContext automatically trigger navigation.
  */
 export default function RootNavigator() {
-  const { state } = useAuth();
+  const { state, user } = useAuth();
 
   // State 1: Loading - Restoring token from secure storage
   if (state.isLoading) {
@@ -68,8 +72,20 @@ export default function RootNavigator() {
             <Stack.Screen name="Signup" component={SignupScreen} />
           </Stack.Navigator>
         )
+      ) : !user?.country ? (
+        // State 3: User is authenticated but needs to complete onboarding
+        <Stack.Navigator
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen
+            name="CountryDetection"
+            component={CountryDetectionScreen}
+          />
+        </Stack.Navigator>
       ) : (
-        // State 3: User is authenticated - show app stack
+        // State 4: User is authenticated and onboarding complete - show app stack
         <Stack.Navigator
           screenOptions={{
             headerShown: true,
