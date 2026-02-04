@@ -6,11 +6,13 @@ export interface NetWorthData {
   totalLiabilities: number; // in cents
   monthlyDelta: number; // in cents
   assetBreakdown: Array<{
+    id: string;
     type: string;
     name: string;
     value: number; // in cents
   }>;
   liabilityBreakdown: Array<{
+    id: string;
     type: string;
     name: string;
     balance: number; // in cents

@@ -29,7 +29,54 @@ import { AddLiabilityScreen } from '../screens/networth/AddLiabilityScreen';
 import { AssetDetailScreen } from '../screens/networth/AssetDetailScreen';
 import { LiabilityDetailScreen } from '../screens/networth/LiabilityDetailScreen';
 
-const Stack = createNativeStackNavigator();
+// Budget screens
+import {
+  BudgetSetupIncomeScreen,
+  BudgetSetupAllocationScreen,
+  BudgetDashboardScreen,
+  BillsListScreen,
+  AddBillScreen,
+  BillDetailScreen,
+  SinkingFundsScreen,
+  AddSinkingFundScreen,
+  SinkingFundDetailScreen,
+} from '../screens/budget';
+
+// Type definitions for navigation
+export type RootStackParamList = {
+  // Auth screens
+  Login: undefined;
+  Signup: undefined;
+  TwoFactor: undefined;
+  // Onboarding screens
+  CountryDetection: undefined;
+  // App screens
+  Home: undefined;
+  SecuritySettings: undefined;
+  TwoFactorSetup: undefined;
+  // Transaction screens
+  TransactionList: undefined;
+  AddTransaction: undefined;
+  TransactionDetail: { transactionId: string };
+  // Net Worth screens
+  NetWorthDashboard: undefined;
+  AddAsset: undefined;
+  AddLiability: undefined;
+  AssetDetail: { assetId: string };
+  LiabilityDetail: { liabilityId: string };
+  // Budget screens
+  BudgetSetupIncome: undefined;
+  BudgetSetupAllocation: undefined;
+  BudgetDashboard: undefined;
+  BillsList: undefined;
+  AddBill: undefined;
+  BillDetail: { billId: string };
+  SinkingFunds: undefined;
+  AddSinkingFund: undefined;
+  SinkingFundDetail: { fundId: string };
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 /**
  * RootNavigator implements 4-state conditional navigation:
@@ -169,6 +216,73 @@ export default function RootNavigator() {
             component={TwoFactorSetupScreen}
             options={{
               title: 'Enable 2FA',
+            }}
+          />
+          <Stack.Screen
+            name="BudgetDashboard"
+            component={BudgetDashboardScreen}
+            options={{
+              title: 'Budget',
+            }}
+          />
+          <Stack.Screen
+            name="BudgetSetupIncome"
+            component={BudgetSetupIncomeScreen}
+            options={{
+              title: 'Set Up Budget',
+              presentation: 'modal',
+            }}
+          />
+          <Stack.Screen
+            name="BudgetSetupAllocation"
+            component={BudgetSetupAllocationScreen}
+            options={{
+              title: 'Choose Allocation',
+              presentation: 'modal',
+            }}
+          />
+          <Stack.Screen
+            name="BillsList"
+            component={BillsListScreen}
+            options={{
+              title: 'Your Bills',
+            }}
+          />
+          <Stack.Screen
+            name="AddBill"
+            component={AddBillScreen}
+            options={{
+              title: 'Add a Bill',
+              presentation: 'modal',
+            }}
+          />
+          <Stack.Screen
+            name="BillDetail"
+            component={BillDetailScreen}
+            options={{
+              title: 'Bill Details',
+            }}
+          />
+          <Stack.Screen
+            name="SinkingFunds"
+            component={SinkingFundsScreen}
+            options={{
+              title: 'Savings Goals',
+            }}
+          />
+          <Stack.Screen
+            name="AddSinkingFund"
+            component={AddSinkingFundScreen}
+            options={{
+              title: 'Create a Savings Goal',
+              presentation: 'modal',
+            }}
+          />
+          <Stack.Screen
+            name="SinkingFundDetail"
+            component={SinkingFundDetailScreen}
+            options={{
+              title: 'Goal Details',
             }}
           />
         </Stack.Navigator>
