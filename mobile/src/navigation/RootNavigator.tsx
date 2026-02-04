@@ -40,6 +40,8 @@ import {
   SinkingFundsScreen,
   AddSinkingFundScreen,
   SinkingFundDetailScreen,
+  SpendingChartsScreen,
+  CreditCardsScreen,
 } from '../screens/budget';
 
 // Type definitions for navigation
@@ -74,6 +76,8 @@ export type RootStackParamList = {
   SinkingFunds: undefined;
   AddSinkingFund: undefined;
   SinkingFundDetail: { fundId: string };
+  SpendingCharts: undefined;
+  CreditCards: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -283,6 +287,20 @@ export default function RootNavigator() {
             component={SinkingFundDetailScreen}
             options={{
               title: 'Goal Details',
+            }}
+          />
+          <Stack.Screen
+            name="SpendingCharts"
+            component={SpendingChartsScreen}
+            options={{
+              title: 'Spending Breakdown',
+            }}
+          />
+          <Stack.Screen
+            name="CreditCards"
+            component={CreditCardsScreen}
+            options={{
+              title: 'Credit Cards',
             }}
           />
         </Stack.Navigator>

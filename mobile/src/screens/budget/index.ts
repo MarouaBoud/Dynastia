@@ -7,3 +7,5 @@ export { BillDetailScreen } from './BillDetailScreen';
 export { SinkingFundsScreen } from './SinkingFundsScreen';
 export { AddSinkingFundScreen } from './AddSinkingFundScreen';
 export { SinkingFundDetailScreen } from './SinkingFundDetailScreen';
+export { SpendingChartsScreen } from './SpendingChartsScreen';
+export { CreditCardsScreen } from './CreditCardsScreen';
