@@ -3,20 +3,32 @@ import { StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider } from './src/contexts/AuthContext';
 import { BudgetProvider } from './src/contexts/BudgetContext';
+import { ThemeProvider, useColors, useIsDarkMode } from './src/theme';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import RootNavigator from './src/navigation/RootNavigator';
+
+function AppContent() {
+  const colors = useColors();
+  const isDark = useIsDarkMode();
+
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <RootNavigator />
+    </View>
+  );
+}
 
 export default function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <BudgetProvider>
-          <View style={styles.container}>
-            <StatusBar style="auto" />
-            <RootNavigator />
-          </View>
-        </BudgetProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <BudgetProvider>
+            <AppContent />
+          </BudgetProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }
@@ -24,6 +36,5 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
 });
