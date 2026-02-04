@@ -9,12 +9,16 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { NetWorthCard } from '../../components/networth/NetWorthCard';
 import { AssetLiabilityList } from '../../components/networth/AssetLiabilityList';
 import { getNetWorth, NetWorthData } from '../../services/networth.service';
+import { RootStackParamList } from '../../navigation/RootNavigator';
+
+type NetWorthNavigationProp = NativeStackNavigationProp<RootStackParamList, 'NetWorthDashboard'>;
 
 export function NetWorthDashboard() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NetWorthNavigationProp>();
   const [data, setData] = useState<NetWorthData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -45,24 +49,24 @@ export function NetWorthDashboard() {
 
   const handleAssetPress = useCallback(
     (id: string) => {
-      navigation.navigate('AssetDetail' as never, { assetId: id } as never);
+      navigation.navigate('AssetDetail', { assetId: id });
     },
     [navigation]
   );
 
   const handleLiabilityPress = useCallback(
     (id: string) => {
-      navigation.navigate('LiabilityDetail' as never, { liabilityId: id } as never);
+      navigation.navigate('LiabilityDetail', { liabilityId: id });
     },
     [navigation]
   );
 
   const handleAddAsset = useCallback(() => {
-    navigation.navigate('AddAsset' as never);
+    navigation.navigate('AddAsset');
   }, [navigation]);
 
   const handleAddLiability = useCallback(() => {
-    navigation.navigate('AddLiability' as never);
+    navigation.navigate('AddLiability');
   }, [navigation]);
 
   if (loading) {

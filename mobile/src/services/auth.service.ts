@@ -62,13 +62,25 @@ export const signup = async (
   firstName?: string,
   lastName?: string
 ): Promise<SignupResponse> => {
-  const response = await unauthenticatedApi.post('/auth/signup', {
-    email,
-    password,
-    firstName,
-    lastName,
-  });
-  return response.data;
+  console.log('Signup payload:', { email, password: '***', firstName, lastName });
+  try {
+    const response = await unauthenticatedApi.post('/auth/signup', {
+      email,
+      password,
+      firstName,
+      lastName,
+    });
+    return response.data;
+  } catch (error: any) {
+    if (axios.isAxiosError(error)) {
+      console.error('Signup error details:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        headers: error.response?.headers
+      });
+    }
+    throw error;
+  }
 };
 
 /**

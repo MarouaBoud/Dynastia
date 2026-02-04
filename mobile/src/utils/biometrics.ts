@@ -1,5 +1,6 @@
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
 /**
  * Biometric authentication utilities for secure, emotionally safe app unlock.
@@ -16,6 +17,8 @@ interface BiometricCapability {
   types: string[];
 }
 
+const isWeb = Platform.OS === 'web';
+
 /**
  * Checks if biometric authentication is available and enrolled on this device.
  *
@@ -28,6 +31,8 @@ interface BiometricCapability {
  * Types are human-readable: "Fingerprint", "Face ID", "Iris"
  */
 export const getBiometricCapability = async (): Promise<BiometricCapability> => {
+  if (isWeb) return { available: false, types: [] };
+
   try {
     // Check if device has biometric hardware
     const hasHardware = await LocalAuthentication.hasHardwareAsync();
@@ -76,6 +81,8 @@ export const getBiometricCapability = async (): Promise<BiometricCapability> => 
  * @returns {Promise<boolean>} True if enabled successfully, false if unavailable
  */
 export const setupBiometrics = async (userId: string): Promise<boolean> => {
+  if (isWeb) return false;
+
   try {
     // Check if biometrics are available first
     const capability = await getBiometricCapability();
@@ -101,6 +108,8 @@ export const setupBiometrics = async (userId: string): Promise<boolean> => {
  * @returns {Promise<boolean>} True if biometrics enabled, false otherwise
  */
 export const isBiometricEnabled = async (userId: string): Promise<boolean> => {
+  if (isWeb) return false;
+
   try {
     const key = `biometrics_enabled_${userId}`;
     const value = await SecureStore.getItemAsync(key);
@@ -121,6 +130,8 @@ export const isBiometricEnabled = async (userId: string): Promise<boolean> => {
  * Fallback: "Use password instead" (supportive, not shaming)
  */
 export const authenticateWithBiometrics = async (): Promise<boolean> => {
+  if (isWeb) return false;
+
   try {
     const result = await LocalAuthentication.authenticateAsync({
       promptMessage: 'Unlock your financial sanctuary',
@@ -144,6 +155,8 @@ export const authenticateWithBiometrics = async (): Promise<boolean> => {
  * @returns {Promise<void>}
  */
 export const disableBiometrics = async (userId: string): Promise<void> => {
+  if (isWeb) return;
+
   try {
     const key = `biometrics_enabled_${userId}`;
     await SecureStore.deleteItemAsync(key);
