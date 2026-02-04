@@ -1,115 +1,175 @@
+/**
+ * HomeScreen
+ *
+ * Main dashboard with navigation cards to key features.
+ * Uses design system components for consistent styling.
+ */
+
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
+import { useColors } from '../../theme';
+import { tokens } from '../../theme/tokens';
+import { Button } from '../../components/ui/Button';
+import { hapticLight } from '../../utils/haptics';
 
 interface HomeScreenProps {
   navigation: any;
 }
 
+interface FeatureCardProps {
+  emoji: string;
+  title: string;
+  subtitle: string;
+  accentColor: string;
+  onPress: () => void;
+}
+
+function FeatureCard({ emoji, title, subtitle, accentColor, onPress }: FeatureCardProps) {
+  const colors = useColors();
+
+  const handlePress = () => {
+    hapticLight();
+    onPress();
+  };
+
+  return (
+    <TouchableOpacity
+      style={[
+        styles.featureCard,
+        { backgroundColor: accentColor + '15' },
+      ]}
+      onPress={handlePress}
+      activeOpacity={0.7}
+    >
+      <Text style={styles.featureEmoji}>{emoji}</Text>
+      <Text style={[styles.featureTitle, { color: colors.text }]}>{title}</Text>
+      <Text style={[styles.featureSubtitle, { color: colors.textSecondary }]}>{subtitle}</Text>
+    </TouchableOpacity>
+  );
+}
+
 export default function HomeScreen({ navigation }: HomeScreenProps) {
+  const colors = useColors();
   const { signOut, state } = useAuth();
 
   const handleLogout = async () => {
     await signOut();
   };
 
+  const features = [
+    {
+      emoji: '💰',
+      title: 'Budget',
+      subtitle: 'Pay Yourself First',
+      accentColor: colors.primary,
+      screen: 'BudgetDashboard',
+    },
+    {
+      emoji: '📝',
+      title: 'Transactions',
+      subtitle: 'Track spending',
+      accentColor: colors.success,
+      screen: 'TransactionList',
+    },
+    {
+      emoji: '📈',
+      title: 'Net Worth',
+      subtitle: 'Assets & liabilities',
+      accentColor: colors.warning,
+      screen: 'NetWorthDashboard',
+    },
+    {
+      emoji: '🔒',
+      title: 'Security',
+      subtitle: '2FA & biometrics',
+      accentColor: '#A855F7',
+      screen: 'SecuritySettings',
+    },
+  ];
+
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Welcome to Dynastia</Text>
-        <Text style={styles.subtitle}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.scrollContent}
+    >
+      <View style={styles.header}>
+        <Text style={[styles.title, { color: colors.text }]}>Dynastia</Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           {state.user?.firstName
-            ? `Hi ${state.user.firstName}! Your wealth journey starts here.`
+            ? `Hi ${state.user.firstName}!`
             : 'Your wealth journey starts here.'}
         </Text>
-
-        <TouchableOpacity
-          style={styles.primaryButton}
-          onPress={() => navigation.navigate('TransactionList')}
-        >
-          <Text style={styles.primaryButtonText}>View Transactions</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.settingsButton}
-          onPress={() => navigation.navigate('SecuritySettings')}
-        >
-          <Text style={styles.settingsButtonText}>Security Settings</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutButtonText}>Log Out</Text>
-        </TouchableOpacity>
       </View>
-    </View>
+
+      <View style={styles.cardsGrid}>
+        {features.map((feature) => (
+          <FeatureCard
+            key={feature.screen}
+            emoji={feature.emoji}
+            title={feature.title}
+            subtitle={feature.subtitle}
+            accentColor={feature.accentColor}
+            onPress={() => navigation.navigate(feature.screen)}
+          />
+        ))}
+      </View>
+
+      <Button
+        variant="secondary"
+        onPress={handleLogout}
+        fullWidth
+        style={styles.logoutButton}
+      >
+        Log Out
+      </Button>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 24,
+  scrollContent: {
+    padding: tokens.spacing.lg,
+    paddingTop: 60,
+  },
+  header: {
+    marginBottom: tokens.spacing.xl,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    color: '#1a1a1a',
-    textAlign: 'center',
+    fontSize: tokens.typography.sizes.displayMd.fontSize,
+    fontWeight: tokens.typography.weights.bold,
+    marginBottom: tokens.spacing.xs,
   },
   subtitle: {
-    fontSize: 18,
-    color: '#666',
-    marginBottom: 48,
-    textAlign: 'center',
+    fontSize: tokens.typography.sizes.bodyLg.fontSize,
   },
-  primaryButton: {
-    width: '100%',
-    height: 56,
-    backgroundColor: '#6366F1',
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
+  cardsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: tokens.spacing.md,
+    marginBottom: tokens.spacing.xl,
   },
-  primaryButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
+  featureCard: {
+    width: '47%',
+    aspectRatio: 1,
+    borderRadius: tokens.radius.lg,
+    padding: tokens.spacing.md,
+    justifyContent: 'space-between',
   },
-  settingsButton: {
-    width: '100%',
-    height: 56,
-    backgroundColor: '#007AFF',
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
+  featureEmoji: {
+    fontSize: 32,
   },
-  settingsButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
+  featureTitle: {
+    fontSize: tokens.typography.sizes.bodyLg.fontSize,
+    fontWeight: tokens.typography.weights.semibold,
+  },
+  featureSubtitle: {
+    fontSize: tokens.typography.sizes.bodySm.fontSize,
   },
   logoutButton: {
-    width: '100%',
-    height: 56,
-    backgroundColor: '#f9f9f9',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logoutButtonText: {
-    color: '#666',
-    fontSize: 18,
-    fontWeight: '600',
+    marginTop: tokens.spacing.md,
   },
 });

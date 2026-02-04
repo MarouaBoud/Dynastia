@@ -1,3 +1,10 @@
+/**
+ * TransactionListScreen
+ *
+ * List of all transactions with category colors and pull-to-refresh.
+ * Uses design system components for consistent styling.
+ */
+
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
@@ -5,12 +12,15 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
   RefreshControl,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getTransactions, Transaction } from '../../services/transactions.service';
 import { formatCurrency } from '../../utils/currency';
+import { useColors } from '../../theme';
+import { tokens } from '../../theme/tokens';
+import { SkeletonListItem, SkeletonGroup } from '../../components/ui/Skeleton';
+import { hapticLight } from '../../utils/haptics';
 
 type RootStackParamList = {
   TransactionList: undefined;
@@ -22,7 +32,6 @@ type TransactionListScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'TransactionList'>;
 };
 
-// Color mapping for categories
 const CATEGORY_COLORS: Record<string, string> = {
   Housing: '#8B5CF6',
   Food: '#10B981',
@@ -34,6 +43,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 export function TransactionListScreen({ navigation }: TransactionListScreenProps) {
+  const colors = useColors();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -54,7 +64,6 @@ export function TransactionListScreen({ navigation }: TransactionListScreenProps
     fetchTransactions();
   }, []);
 
-  // Refresh when screen comes back into focus (after adding/editing transaction)
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       fetchTransactions();
@@ -68,10 +77,12 @@ export function TransactionListScreen({ navigation }: TransactionListScreenProps
   }, []);
 
   const handleAddTransaction = () => {
+    hapticLight();
     navigation.navigate('AddTransaction');
   };
 
   const handleTransactionPress = (transactionId: string) => {
+    hapticLight();
     navigation.navigate('TransactionDetail', { transactionId });
   };
 
@@ -86,26 +97,23 @@ export function TransactionListScreen({ navigation }: TransactionListScreenProps
 
     return (
       <TouchableOpacity
-        style={styles.transactionCard}
+        style={[styles.transactionCard, { backgroundColor: colors.card }]}
         onPress={() => handleTransactionPress(item.id)}
         activeOpacity={0.7}
       >
-        {/* Category color indicator */}
         <View style={[styles.categoryDot, { backgroundColor: categoryColor }]} />
-
-        {/* Transaction info */}
         <View style={styles.transactionInfo}>
-          <Text style={styles.merchantText}>{item.merchant}</Text>
+          <Text style={[styles.merchantText, { color: colors.text }]}>{item.merchant}</Text>
           <View style={styles.metaRow}>
             <Text style={[styles.categoryText, { color: categoryColor }]}>
               {item.category}
             </Text>
-            <Text style={styles.dateText}> • {formattedDate}</Text>
+            <Text style={[styles.dateText, { color: colors.textMuted }]}>
+              {' '}• {formattedDate}
+            </Text>
           </View>
         </View>
-
-        {/* Amount */}
-        <Text style={styles.amountText}>{formattedAmount}</Text>
+        <Text style={[styles.amountText, { color: colors.text }]}>{formattedAmount}</Text>
       </TouchableOpacity>
     );
   };
@@ -113,28 +121,45 @@ export function TransactionListScreen({ navigation }: TransactionListScreenProps
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
       <Text style={styles.emptyStateIcon}>💸</Text>
-      <Text style={styles.emptyStateTitle}>No transactions yet</Text>
-      <Text style={styles.emptyStateText}>
+      <Text style={[styles.emptyStateTitle, { color: colors.text }]}>
+        No transactions yet
+      </Text>
+      <Text style={[styles.emptyStateText, { color: colors.textSecondary }]}>
         Tap the + button to add your first transaction
       </Text>
     </View>
   );
 
+  const renderLoadingState = () => (
+    <View style={styles.loadingContainer}>
+      <SkeletonGroup>
+        {[1, 2, 3, 4, 5].map((i) => (
+          <SkeletonListItem key={i} />
+        ))}
+      </SkeletonGroup>
+    </View>
+  );
+
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#6366F1" />
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Transactions</Text>
+          <View style={[styles.addButton, { backgroundColor: colors.primary }]}>
+            <Text style={styles.addButtonText}>+</Text>
+          </View>
+        </View>
+        {renderLoadingState()}
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Transactions</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Transactions</Text>
         <TouchableOpacity
-          style={styles.addButton}
+          style={[styles.addButton, { backgroundColor: colors.primary }]}
           onPress={handleAddTransaction}
           activeOpacity={0.8}
         >
@@ -142,21 +167,20 @@ export function TransactionListScreen({ navigation }: TransactionListScreenProps
         </TouchableOpacity>
       </View>
 
-      {/* Transaction list */}
       <FlatList
         data={transactions}
         renderItem={renderTransactionItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={[
           styles.listContent,
-          transactions.length === 0 && styles.listContentEmpty,
+          transactions.length === 0 ? styles.listContentEmpty : {},
         ]}
         ListEmptyComponent={renderEmptyState}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#6366F1"
+            tintColor={colors.primary}
           />
         }
       />
@@ -167,50 +191,43 @@ export function TransactionListScreen({ navigation }: TransactionListScreenProps
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F9FAFB',
+    padding: tokens.spacing.lg,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: tokens.spacing.lg,
     paddingTop: 60,
-    paddingBottom: 20,
-    backgroundColor: '#FFF',
+    paddingBottom: tokens.spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#1F2937',
+    fontSize: tokens.typography.sizes.headingLg.fontSize,
+    fontWeight: tokens.typography.weights.bold,
   },
   addButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#6366F1',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#6366F1',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4,
   },
   addButtonText: {
     fontSize: 28,
-    fontWeight: '300',
+    fontWeight: tokens.typography.weights.regular,
     color: '#FFF',
   },
   listContent: {
-    padding: 20,
+    padding: tokens.spacing.lg,
   },
   listContentEmpty: {
     flex: 1,
@@ -219,10 +236,9 @@ const styles = StyleSheet.create({
   transactionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: tokens.radius.md,
+    padding: tokens.spacing.md,
+    marginBottom: tokens.spacing.sm,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -233,52 +249,47 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    marginRight: 12,
+    marginRight: tokens.spacing.sm,
   },
   transactionInfo: {
     flex: 1,
   },
   merchantText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 4,
+    fontSize: tokens.typography.sizes.bodyMd.fontSize,
+    fontWeight: tokens.typography.weights.semibold,
+    marginBottom: tokens.spacing.xxs,
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   categoryText: {
-    fontSize: 13,
-    fontWeight: '500',
+    fontSize: tokens.typography.sizes.bodySm.fontSize,
+    fontWeight: tokens.typography.weights.medium,
   },
   dateText: {
-    fontSize: 13,
-    color: '#6B7280',
+    fontSize: tokens.typography.sizes.bodySm.fontSize,
   },
   amountText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1F2937',
+    fontSize: tokens.typography.sizes.bodyLg.fontSize,
+    fontWeight: tokens.typography.weights.bold,
   },
   emptyState: {
     alignItems: 'center',
-    paddingVertical: 40,
+    paddingVertical: tokens.spacing.xxl,
   },
   emptyStateIcon: {
     fontSize: 64,
-    marginBottom: 16,
+    marginBottom: tokens.spacing.md,
   },
   emptyStateTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 8,
+    fontSize: tokens.typography.sizes.bodyLg.fontSize,
+    fontWeight: tokens.typography.weights.semibold,
+    marginBottom: tokens.spacing.xs,
   },
   emptyStateText: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: tokens.typography.sizes.bodySm.fontSize,
     textAlign: 'center',
-    paddingHorizontal: 40,
+    paddingHorizontal: tokens.spacing.xxl,
   },
 });

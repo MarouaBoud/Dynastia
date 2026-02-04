@@ -1,8 +1,14 @@
+/**
+ * LoginScreen
+ *
+ * Welcome back screen with email/password login and biometric unlock option.
+ * Uses design system components for consistent styling.
+ */
+
 import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
@@ -14,12 +20,17 @@ import { useAuth } from '../../contexts/AuthContext';
 import * as authService from '../../services/auth.service';
 import * as biometrics from '../../utils/biometrics';
 import * as storage from '../../services/storage.service';
+import { useColors } from '../../theme';
+import { tokens } from '../../theme/tokens';
+import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
 
 interface LoginScreenProps {
   navigation: any;
 }
 
 export default function LoginScreen({ navigation }: LoginScreenProps) {
+  const colors = useColors();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -34,25 +45,20 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
 
   const checkBiometricAvailability = async () => {
     try {
-      // Check if user has existing token
       const existingToken = await storage.getAccessToken();
       const user = await storage.getUser();
 
       if (!existingToken || !user) {
-        // No existing session, don't show biometric option
         return;
       }
 
-      // Check if biometrics are enabled for this user
       const userId = (user as any).id;
       const isEnabled = await biometrics.isBiometricEnabled(userId);
 
       if (!isEnabled) {
-        // Biometrics not enabled, don't show option
         return;
       }
 
-      // Check device capability
       const capability = await biometrics.getBiometricCapability();
 
       if (capability.available && capability.types.length > 0) {
@@ -71,10 +77,8 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
       const success = await biometrics.authenticateWithBiometrics();
 
       if (success) {
-        // Biometric authentication successful - restore session from SecureStore
         await restoreSession();
       } else {
-        // Biometric authentication failed - show password form with emotionally safe message
         setShowBiometric(false);
         Alert.alert(
           'Alternative Login',
@@ -105,10 +109,8 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
       const response = await authService.login(email, password);
 
       if (response.requires2FA && response.tempUserId) {
-        // User has 2FA enabled - show 2FA screen
         require2FA(response.tempUserId);
       } else if (response.accessToken && response.refreshToken && response.user) {
-        // No 2FA - sign in directly
         await signIn(response.accessToken, response.refreshToken, response.user);
       }
     } catch (error: any) {
@@ -124,27 +126,35 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.content}>
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>Log in to continue your wealth journey</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Welcome Back</Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+          Log in to continue your wealth journey
+        </Text>
 
         {showBiometric && biometricAvailable ? (
-          // Show biometric unlock option
           <>
             <TouchableOpacity
-              style={[styles.biometricButton, loading && styles.buttonDisabled]}
+              style={[
+                styles.biometricButton,
+                {
+                  backgroundColor: colors.primary + '10',
+                  borderColor: colors.primary,
+                },
+                loading ? styles.buttonDisabled : {},
+              ]}
               onPress={handleBiometricUnlock}
               disabled={loading}
             >
               {loading ? (
-                <ActivityIndicator color="#007AFF" />
+                <ActivityIndicator color={colors.primary} />
               ) : (
                 <>
                   <Text style={styles.biometricIcon}>🔐</Text>
-                  <Text style={styles.biometricButtonText}>
+                  <Text style={[styles.biometricButtonText, { color: colors.primary }]}>
                     Unlock with {biometricType}
                   </Text>
                 </>
@@ -152,16 +162,18 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
             </TouchableOpacity>
 
             <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>or use password</Text>
-              <View style={styles.dividerLine} />
+              <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+              <Text style={[styles.dividerText, { color: colors.textMuted }]}>
+                or use password
+              </Text>
+              <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
             </View>
           </>
         ) : null}
 
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
+        <Input
+          label="Email"
+          placeholder="your@email.com"
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
@@ -169,32 +181,31 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
           autoComplete="email"
         />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
+        <Input
+          label="Password"
+          placeholder="Enter your password"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
           autoComplete="password"
         />
 
-        <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
+        <Button
           onPress={handleLogin}
-          disabled={loading}
+          loading={loading}
+          fullWidth
+          style={styles.loginButton}
         >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Continue</Text>
-          )}
-        </TouchableOpacity>
+          Continue
+        </Button>
 
         <TouchableOpacity
           style={styles.linkButton}
           onPress={() => navigation.navigate('Signup')}
         >
-          <Text style={styles.linkText}>New to Dynastia? Create your account</Text>
+          <Text style={[styles.linkText, { color: colors.primary }]}>
+            New to Dynastia? Create your account
+          </Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -204,91 +215,62 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   content: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: tokens.spacing.lg,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#1a1a1a',
+    fontSize: tokens.typography.sizes.displayMd.fontSize,
+    fontWeight: tokens.typography.weights.bold,
+    marginBottom: tokens.spacing.xs,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 32,
-  },
-  input: {
-    height: 56,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-    fontSize: 16,
-    backgroundColor: '#f9f9f9',
-  },
-  button: {
-    height: 56,
-    backgroundColor: '#007AFF',
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  linkButton: {
-    marginTop: 24,
-    alignItems: 'center',
-  },
-  linkText: {
-    color: '#007AFF',
-    fontSize: 16,
+    fontSize: tokens.typography.sizes.bodyLg.fontSize,
+    marginBottom: tokens.spacing.xl,
   },
   biometricButton: {
     height: 56,
-    backgroundColor: '#f0f8ff',
-    borderRadius: 12,
+    borderRadius: tokens.radius.md,
     borderWidth: 2,
-    borderColor: '#007AFF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: tokens.spacing.md,
     flexDirection: 'row',
   },
   biometricIcon: {
     fontSize: 24,
-    marginRight: 8,
+    marginRight: tokens.spacing.sm,
   },
   biometricButtonText: {
-    color: '#007AFF',
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: tokens.typography.sizes.bodyLg.fontSize,
+    fontWeight: tokens.typography.weights.semibold,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 16,
+    marginVertical: tokens.spacing.md,
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#ddd',
   },
   dividerText: {
-    marginHorizontal: 16,
-    color: '#999',
-    fontSize: 14,
+    marginHorizontal: tokens.spacing.md,
+    fontSize: tokens.typography.sizes.bodySm.fontSize,
+  },
+  loginButton: {
+    marginTop: tokens.spacing.md,
+  },
+  linkButton: {
+    marginTop: tokens.spacing.lg,
+    alignItems: 'center',
+  },
+  linkText: {
+    fontSize: tokens.typography.sizes.bodyMd.fontSize,
   },
 });

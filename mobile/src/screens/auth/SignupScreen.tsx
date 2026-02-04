@@ -1,24 +1,34 @@
+/**
+ * SignupScreen
+ *
+ * Account creation screen with name, email, and password fields.
+ * Uses design system components for consistent styling.
+ */
+
 import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
   Alert,
-  ActivityIndicator,
   ScrollView,
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import * as authService from '../../services/auth.service';
+import { useColors } from '../../theme';
+import { tokens } from '../../theme/tokens';
+import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
 
 interface SignupScreenProps {
   navigation: any;
 }
 
 export default function SignupScreen({ navigation }: SignupScreenProps) {
+  const colors = useColors();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -56,33 +66,35 @@ export default function SignupScreen({ navigation }: SignupScreenProps) {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
-          <Text style={styles.title}>Create Your Account</Text>
-          <Text style={styles.subtitle}>Start building your financial sovereignty</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Create Your Account</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            Start building your financial sovereignty
+          </Text>
 
-          <TextInput
-            style={styles.input}
-            placeholder="First Name (optional)"
+          <Input
+            label="First Name"
+            placeholder="Your first name (optional)"
             value={firstName}
             onChangeText={setFirstName}
             autoComplete="given-name"
           />
 
-          <TextInput
-            style={styles.input}
-            placeholder="Last Name (optional)"
+          <Input
+            label="Last Name"
+            placeholder="Your last name (optional)"
             value={lastName}
             onChangeText={setLastName}
             autoComplete="family-name"
           />
 
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
+          <Input
+            label="Email"
+            placeholder="your@email.com"
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
@@ -90,32 +102,32 @@ export default function SignupScreen({ navigation }: SignupScreenProps) {
             autoComplete="email"
           />
 
-          <TextInput
-            style={styles.input}
-            placeholder="Password (min. 8 characters)"
+          <Input
+            label="Password"
+            placeholder="Minimum 8 characters"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
             autoComplete="password"
+            helperText="Choose a strong password to keep your data safe"
           />
 
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
+          <Button
             onPress={handleSignup}
-            disabled={loading}
+            loading={loading}
+            fullWidth
+            style={styles.signupButton}
           >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Create Account</Text>
-            )}
-          </TouchableOpacity>
+            Create Account
+          </Button>
 
           <TouchableOpacity
             style={styles.linkButton}
             onPress={() => navigation.navigate('Login')}
           >
-            <Text style={styles.linkText}>Already have an account? Log in</Text>
+            <Text style={[styles.linkText, { color: colors.primary }]}>
+              Already have an account? Log in
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -126,7 +138,6 @@ export default function SignupScreen({ navigation }: SignupScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   scrollContent: {
     flexGrow: 1,
@@ -134,52 +145,26 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 32,
+    paddingHorizontal: tokens.spacing.lg,
+    paddingVertical: tokens.spacing.xl,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#1a1a1a',
+    fontSize: tokens.typography.sizes.displayMd.fontSize,
+    fontWeight: tokens.typography.weights.bold,
+    marginBottom: tokens.spacing.xs,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 32,
+    fontSize: tokens.typography.sizes.bodyLg.fontSize,
+    marginBottom: tokens.spacing.xl,
   },
-  input: {
-    height: 56,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-    fontSize: 16,
-    backgroundColor: '#f9f9f9',
-  },
-  button: {
-    height: 56,
-    backgroundColor: '#007AFF',
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
+  signupButton: {
+    marginTop: tokens.spacing.md,
   },
   linkButton: {
-    marginTop: 24,
+    marginTop: tokens.spacing.lg,
     alignItems: 'center',
   },
   linkText: {
-    color: '#007AFF',
-    fontSize: 16,
+    fontSize: tokens.typography.sizes.bodyMd.fontSize,
   },
 });

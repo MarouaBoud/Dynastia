@@ -1,22 +1,31 @@
+/**
+ * AddTransactionScreen
+ *
+ * Form for adding a new transaction with auto-categorization.
+ * Uses design system components for consistent styling.
+ */
+
 import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   ScrollView,
   StyleSheet,
   Alert,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CurrencyInput } from '../../components/forms/CurrencyInput';
-import { CategoryPicker, DEFAULT_CATEGORIES } from '../../components/forms/CategoryPicker';
+import { CategoryPicker } from '../../components/forms/CategoryPicker';
 import { DatePicker } from '../../components/forms/DatePicker';
 import { createTransaction, CreateTransactionInput } from '../../services/transactions.service';
+import { useColors } from '../../theme';
+import { tokens } from '../../theme/tokens';
+import { Button } from '../../components/ui/Button';
+import { hapticSuccess, hapticError } from '../../utils/haptics';
 
 type RootStackParamList = {
   TransactionList: undefined;
@@ -29,21 +38,16 @@ type AddTransactionScreenProps = {
 };
 
 interface TransactionFormData {
-  amount: number; // in cents
+  amount: number;
   merchant: string;
   date: Date;
   category: string;
   notes: string;
 }
 
-/**
- * Auto-categorize merchant based on keyword matching
- * Simple client-side version - backend will also validate
- */
 function autoCategorizeMerchant(merchant: string): string {
   const lowerMerchant = merchant.toLowerCase();
 
-  // Housing keywords
   if (
     lowerMerchant.includes('rent') ||
     lowerMerchant.includes('mortgage') ||
@@ -55,7 +59,6 @@ function autoCategorizeMerchant(merchant: string): string {
     return 'Housing';
   }
 
-  // Food keywords
   if (
     lowerMerchant.includes('restaurant') ||
     lowerMerchant.includes('cafe') ||
@@ -69,7 +72,6 @@ function autoCategorizeMerchant(merchant: string): string {
     return 'Food';
   }
 
-  // Transport keywords
   if (
     lowerMerchant.includes('uber') ||
     lowerMerchant.includes('lyft') ||
@@ -83,7 +85,6 @@ function autoCategorizeMerchant(merchant: string): string {
     return 'Transport';
   }
 
-  // Health keywords
   if (
     lowerMerchant.includes('pharmacy') ||
     lowerMerchant.includes('hospital') ||
@@ -95,7 +96,6 @@ function autoCategorizeMerchant(merchant: string): string {
     return 'Health';
   }
 
-  // Entertainment keywords
   if (
     lowerMerchant.includes('cinema') ||
     lowerMerchant.includes('movie') ||
@@ -109,7 +109,6 @@ function autoCategorizeMerchant(merchant: string): string {
     return 'Entertainment';
   }
 
-  // Shopping keywords
   if (
     lowerMerchant.includes('amazon') ||
     lowerMerchant.includes('store') ||
@@ -119,11 +118,11 @@ function autoCategorizeMerchant(merchant: string): string {
     return 'Shopping';
   }
 
-  // Default to Other
   return 'Other';
 }
 
 export function AddTransactionScreen({ navigation }: AddTransactionScreenProps) {
+  const colors = useColors();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [suggestedCategory, setSuggestedCategory] = useState<string | undefined>(undefined);
 
@@ -143,7 +142,6 @@ export function AddTransactionScreen({ navigation }: AddTransactionScreenProps) 
     },
   });
 
-  // Watch merchant field for auto-categorization
   const merchant = watch('merchant');
 
   useEffect(() => {
@@ -156,11 +154,13 @@ export function AddTransactionScreen({ navigation }: AddTransactionScreenProps) 
 
   const onSubmit = async (data: TransactionFormData) => {
     if (data.amount <= 0) {
+      hapticError();
       Alert.alert('Invalid Amount', 'Please enter an amount greater than 0');
       return;
     }
 
     if (!data.merchant.trim()) {
+      hapticError();
       Alert.alert('Missing Merchant', 'Please enter a merchant name');
       return;
     }
@@ -177,10 +177,10 @@ export function AddTransactionScreen({ navigation }: AddTransactionScreenProps) 
       };
 
       await createTransaction(input);
-
-      // Navigate back to list
+      hapticSuccess();
       navigation.goBack();
     } catch (error: any) {
+      hapticError();
       console.error('Create transaction error:', error);
       Alert.alert(
         'Error',
@@ -193,11 +193,11 @@ export function AddTransactionScreen({ navigation }: AddTransactionScreenProps) 
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>Add Transaction</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Add Transaction</Text>
 
         {/* Amount Input */}
         <Controller
@@ -217,24 +217,32 @@ export function AddTransactionScreen({ navigation }: AddTransactionScreenProps) 
 
         {/* Merchant Input */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Merchant</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Merchant</Text>
           <Controller
             control={control}
             name="merchant"
             rules={{ required: true }}
             render={({ field: { value, onChange, onBlur } }) => (
               <TextInput
-                style={styles.textInput}
+                style={[
+                  styles.textInput,
+                  {
+                    backgroundColor: colors.backgroundSecondary,
+                    color: colors.text,
+                  },
+                ]}
                 value={value}
                 onChangeText={onChange}
                 onBlur={onBlur}
                 placeholder="e.g., Starbucks, Amazon"
-                placeholderTextColor="#999"
+                placeholderTextColor={colors.textMuted}
               />
             )}
           />
           {errors.merchant && (
-            <Text style={styles.errorText}>Merchant is required</Text>
+            <Text style={[styles.errorText, { color: colors.error }]}>
+              Merchant is required
+            </Text>
           )}
         </View>
 
@@ -261,20 +269,27 @@ export function AddTransactionScreen({ navigation }: AddTransactionScreenProps) 
           )}
         />
 
-        {/* Notes Input (optional) */}
+        {/* Notes Input */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Notes (optional)</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Notes (optional)</Text>
           <Controller
             control={control}
             name="notes"
             render={({ field: { value, onChange, onBlur } }) => (
               <TextInput
-                style={[styles.textInput, styles.textInputMultiline]}
+                style={[
+                  styles.textInput,
+                  styles.textInputMultiline,
+                  {
+                    backgroundColor: colors.backgroundSecondary,
+                    color: colors.text,
+                  },
+                ]}
                 value={value}
                 onChangeText={onChange}
                 onBlur={onBlur}
                 placeholder="Add any notes..."
-                placeholderTextColor="#999"
+                placeholderTextColor={colors.textMuted}
                 multiline
                 numberOfLines={3}
               />
@@ -283,18 +298,14 @@ export function AddTransactionScreen({ navigation }: AddTransactionScreenProps) 
         </View>
 
         {/* Submit Button */}
-        <TouchableOpacity
-          style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+        <Button
           onPress={handleSubmit(onSubmit)}
-          disabled={isSubmitting}
-          activeOpacity={0.8}
+          loading={isSubmitting}
+          fullWidth
+          style={styles.submitButton}
         >
-          {isSubmitting ? (
-            <ActivityIndicator color="#FFF" />
-          ) : (
-            <Text style={styles.submitButtonText}>Save Transaction</Text>
-          )}
-        </TouchableOpacity>
+          Save Transaction
+        </Button>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -303,70 +314,43 @@ export function AddTransactionScreen({ navigation }: AddTransactionScreenProps) 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: tokens.spacing.lg,
+    paddingBottom: tokens.spacing.xxl * 2,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 24,
+    fontSize: tokens.typography.sizes.headingLg.fontSize,
+    fontWeight: tokens.typography.weights.bold,
+    marginBottom: tokens.spacing.lg,
   },
   fieldContainer: {
-    marginVertical: 8,
+    marginVertical: tokens.spacing.sm,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
+    fontSize: tokens.typography.sizes.label.fontSize,
+    fontWeight: tokens.typography.weights.medium,
+    marginBottom: tokens.spacing.sm,
   },
   textInput: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: '#333',
-    borderWidth: 2,
-    borderColor: 'transparent',
+    borderRadius: tokens.radius.md,
+    paddingHorizontal: tokens.spacing.md,
+    paddingVertical: tokens.spacing.md,
+    fontSize: tokens.typography.sizes.bodyMd.fontSize,
   },
   textInputMultiline: {
     minHeight: 80,
     textAlignVertical: 'top',
   },
   errorText: {
-    fontSize: 12,
-    color: '#EF4444',
-    marginTop: 6,
-    marginLeft: 4,
+    fontSize: tokens.typography.sizes.caption.fontSize,
+    marginTop: tokens.spacing.xs,
+    marginLeft: tokens.spacing.xs,
   },
   submitButton: {
-    backgroundColor: '#6366F1',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: 24,
-    shadowColor: '#6366F1',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  submitButtonDisabled: {
-    backgroundColor: '#9CA3AF',
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  submitButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#FFF',
+    marginTop: tokens.spacing.lg,
   },
 });

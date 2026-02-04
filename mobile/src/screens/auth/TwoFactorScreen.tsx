@@ -1,3 +1,11 @@
+/**
+ * TwoFactorScreen
+ *
+ * 2FA verification screen with 6-digit code input.
+ * Auto-submits when all digits are entered.
+ * Uses design system components for consistent styling.
+ */
+
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -10,22 +18,24 @@ import {
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import * as authService from '../../services/auth.service';
+import { useColors } from '../../theme';
+import { tokens } from '../../theme/tokens';
+import { Button } from '../../components/ui/Button';
 
 export default function TwoFactorScreen() {
+  const colors = useColors();
   const [token, setToken] = useState('');
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<TextInput>(null);
   const { state, signIn, clear2FARequirement } = useAuth();
 
   useEffect(() => {
-    // Auto-focus input when screen appears
     setTimeout(() => {
       inputRef.current?.focus();
     }, 100);
   }, []);
 
   useEffect(() => {
-    // Auto-submit when 6 digits entered
     if (token.length === 6) {
       handleVerify();
     }
@@ -62,17 +72,27 @@ export default function TwoFactorScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.content}>
-        <Text style={styles.title}>Two-Factor Authentication</Text>
-        <Text style={styles.subtitle}>
+        <Text style={[styles.title, { color: colors.text }]}>
+          Two-Factor Authentication
+        </Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           Enter the 6-digit code from your authenticator app
         </Text>
 
         <TextInput
           ref={inputRef}
-          style={styles.input}
+          style={[
+            styles.codeInput,
+            {
+              backgroundColor: colors.backgroundSecondary,
+              borderColor: colors.primary,
+              color: colors.text,
+            },
+          ]}
           placeholder="000000"
+          placeholderTextColor={colors.textMuted}
           value={token}
           onChangeText={(text) => setToken(text.replace(/[^0-9]/g, ''))}
           keyboardType="number-pad"
@@ -81,24 +101,23 @@ export default function TwoFactorScreen() {
           autoComplete="one-time-code"
         />
 
-        <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
+        <Button
           onPress={handleVerify}
-          disabled={loading || token.length !== 6}
+          loading={loading}
+          disabled={token.length !== 6}
+          fullWidth
         >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Verify</Text>
-          )}
-        </TouchableOpacity>
+          Verify
+        </Button>
 
         <TouchableOpacity
           style={styles.backButton}
           onPress={handleBack}
           disabled={loading}
         >
-          <Text style={styles.backText}>Back to Login</Text>
+          <Text style={[styles.backText, { color: colors.primary }]}>
+            Back to Login
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -108,60 +127,39 @@ export default function TwoFactorScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   content: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: tokens.spacing.lg,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#1a1a1a',
+    fontSize: tokens.typography.sizes.headingLg.fontSize,
+    fontWeight: tokens.typography.weights.bold,
+    marginBottom: tokens.spacing.xs,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 32,
+    fontSize: tokens.typography.sizes.bodyMd.fontSize,
+    marginBottom: tokens.spacing.xl,
     textAlign: 'center',
   },
-  input: {
+  codeInput: {
     height: 64,
     borderWidth: 2,
-    borderColor: '#007AFF',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    marginBottom: 24,
+    borderRadius: tokens.radius.md,
+    paddingHorizontal: tokens.spacing.md,
+    marginBottom: tokens.spacing.lg,
     fontSize: 24,
     textAlign: 'center',
     letterSpacing: 8,
-    fontWeight: '600',
-    backgroundColor: '#f9f9f9',
-  },
-  button: {
-    height: 56,
-    backgroundColor: '#007AFF',
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
+    fontWeight: tokens.typography.weights.semibold,
   },
   backButton: {
-    marginTop: 24,
+    marginTop: tokens.spacing.lg,
     alignItems: 'center',
   },
   backText: {
-    color: '#007AFF',
-    fontSize: 16,
+    fontSize: tokens.typography.sizes.bodyMd.fontSize,
   },
 });
