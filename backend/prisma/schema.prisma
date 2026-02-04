@@ -23,6 +23,11 @@ model User {
   assets           Asset[]
   liabilities      Liability[]
   netWorthSnapshots NetWorthSnapshot[]
+  budgets          Budget[]
+  incomes          Income[]
+  bills            Bill[]
+  sinkingFunds     SinkingFund[]
+  milestones       Milestone[]
 
   @@map("users")
 }
@@ -85,4 +90,127 @@ model NetWorthSnapshot {
   @@unique([userId, date])
   @@index([userId, date])
   @@map("networth_snapshots")
+}
+
+// ============================================
+// Phase 3: Budget & Allocation System Models
+// ============================================
+
+model Budget {
+  id               String   @id @default(cuid())
+  userId           String   @db.Uuid
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  month            Int      // 1-12
+  year             Int      // e.g., 2026
+
+  totalIncome      Decimal  @db.Decimal(19, 4)
+
+  // Allocation percentages (Pay Yourself First)
+  savingsPercent   Decimal  @db.Decimal(5, 2) @default(20)
+  billsPercent     Decimal  @db.Decimal(5, 2) @default(50)
+  lifestylePercent Decimal  @db.Decimal(5, 2) @default(30)
+
+  // Calculated bucket amounts
+  savingsAmount    Decimal  @db.Decimal(19, 4)
+  billsAmount      Decimal  @db.Decimal(19, 4)
+  lifestyleAmount  Decimal  @db.Decimal(19, 4)
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  incomes          Income[]
+  sinkingFunds     SinkingFund[]
+
+  @@unique([userId, month, year])
+  @@index([userId, year, month])
+  @@map("budgets")
+}
+
+model Income {
+  id          String   @id @default(cuid())
+  userId      String   @db.Uuid
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  budgetId    String?
+  budget      Budget?  @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+
+  source      String   @db.VarChar(255) // "Salary", "Freelance", "Side Hustle"
+  amount      Decimal  @db.Decimal(19, 4)
+  frequency   String   @db.VarChar(50) @default("monthly") // "monthly", "bi-weekly", "one-time"
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@map("incomes")
+}
+
+model Bill {
+  id                    String    @id @default(cuid())
+  userId                String    @db.Uuid
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name                  String    @db.VarChar(255) // "Netflix", "Electric Bill"
+  amount                Decimal   @db.Decimal(19, 4)
+
+  // Recurrence settings
+  frequency             String    @db.VarChar(50) @default("monthly") // "weekly", "monthly", "quarterly"
+  dueDay                Int       // Day of month (1-31) or week (1-7)
+  nextDueDate           DateTime
+
+  // Bill categorization
+  category              String    @db.VarChar(50) // "housing", "utilities", "subscription"
+
+  // Credit card specific fields
+  isCreditCard          Boolean   @default(false)
+  creditCardApr         Decimal?  @db.Decimal(5, 2) // e.g., 22.00 for 22%
+
+  // Payment tracking
+  isPaid                Boolean   @default(false)
+  lastPaidAt            DateTime?
+  consecutivePaidInFull Int       @default(0) // For DEBT-04 milestone
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId, nextDueDate])
+  @@index([userId, isCreditCard])
+  @@map("bills")
+}
+
+model SinkingFund {
+  id              String    @id @default(cuid())
+  userId          String    @db.Uuid
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  budgetId        String?
+  budget          Budget?   @relation(fields: [budgetId], references: [id], onDelete: SetNull)
+
+  name            String    @db.VarChar(255) // "Europe Trip", "Annual Taxes"
+  targetAmount    Decimal   @db.Decimal(19, 4)
+  currentAmount   Decimal   @db.Decimal(19, 4) @default(0)
+  deadline        DateTime  // Target date to reach goal
+
+  isCompleted     Boolean   @default(false)
+  completedAt     DateTime?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userId, isCompleted])
+  @@map("sinking_funds")
+}
+
+model Milestone {
+  id           String   @id @default(cuid())
+  userId       String   @db.Uuid
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type         String   @db.VarChar(100) // "credit_card_3_months_no_interest"
+  achievedAt   DateTime @default(now())
+
+  relatedId    String?  // Related entity ID (e.g., Bill ID for credit card milestone)
+  metadata     Json?    // Additional celebration data
+
+  @@index([userId, type])
+  @@map("milestones")
 }
