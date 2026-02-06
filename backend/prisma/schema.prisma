@@ -28,6 +28,7 @@ model User {
   bills            Bill[]
   sinkingFunds     SinkingFund[]
   milestones       Milestone[]
+  habitCheckIns    HabitCheckIn[]
 
   @@map("users")
 }
@@ -213,4 +214,28 @@ model Milestone {
 
   @@index([userId, type])
   @@map("milestones")
+}
+
+// ============================================
+// Phase 4: Milestone & Habit Engine Models
+// ============================================
+
+model HabitCheckIn {
+  id        String   @id @default(cuid())
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  date      DateTime // Normalized to start of day
+  type      String   @db.VarChar(50) @default("money_date") // "money_date", "pay_yourself_first"
+
+  // Check-in data
+  completed Boolean  @default(true)
+  notes     String?  @db.Text
+  metadata  Json?    // Checklist items completed, etc.
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, date, type])
+  @@index([userId, type, date])
+  @@map("habit_check_ins")
 }
