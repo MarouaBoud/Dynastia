@@ -27,8 +27,9 @@ model User {
   incomes          Income[]
   bills            Bill[]
   sinkingFunds     SinkingFund[]
-  milestones       Milestone[]
-  habitCheckIns    HabitCheckIn[]
+  milestones              Milestone[]
+  habitCheckIns           HabitCheckIn[]
+  notificationPreference  NotificationPreference?
 
   @@map("users")
 }
@@ -238,4 +239,28 @@ model HabitCheckIn {
   @@unique([userId, date, type])
   @@index([userId, type, date])
   @@map("habit_check_ins")
+}
+
+model NotificationPreference {
+  id                  String   @id @default(cuid())
+  userId              String   @unique @db.Uuid
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Habit notifications (default opt-in per NOTIF-06)
+  moneyDateReminder   Boolean  @default(true)   // NOTIF-01
+  streakProtection    Boolean  @default(true)   // NOTIF-02
+  billReminders       Boolean  @default(true)   // NOTIF-03
+  milestoneAlerts     Boolean  @default(true)   // NOTIF-04
+
+  // Timing preferences
+  reminderDay         Int      @default(0)      // 0=Sunday, 1=Monday, etc.
+  reminderHour        Int      @default(10)     // Hour of day (0-23)
+
+  // Marketing (default opt-out per NOTIF-06)
+  marketingUpdates    Boolean  @default(false)
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("notification_preferences")
 }
