@@ -31,6 +31,7 @@ import incomesRoutes from './routes/incomes';
 import billsRoutes from './routes/bills';
 import sinkingFundsRoutes from './routes/sinkingFunds';
 import milestonesRoutes from './routes/milestones';
+import habitsRoutes from './routes/habits';
 
 // Middleware
 import { httpLogger, logger } from './middleware/logger';
@@ -118,6 +119,7 @@ app.use('/api/incomes', incomesRoutes);
 app.use('/api/bills', billsRoutes);
 app.use('/api/sinking-funds', sinkingFundsRoutes);
 app.use('/api/milestones', milestonesRoutes);
+app.use('/api/habits', habitsRoutes);
 
 // =============================================================================
 // Error Handling
@@ -162,6 +164,7 @@ Available endpoints:
    Bills:     CRUD /api/bills
    Sinking Funds: CRUD /api/sinking-funds
    Milestones: GET /api/milestones
+   Habits:    CRUD /api/habits
 `);
   }
 });
