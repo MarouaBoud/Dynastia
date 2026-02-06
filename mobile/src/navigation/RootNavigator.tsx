@@ -44,6 +44,9 @@ import {
   CreditCardsScreen,
 } from '../screens/budget';
 
+// Habits screens
+import { HabitsScreen } from '../screens/habits/HabitsScreen';
+
 // Type definitions for navigation
 export type RootStackParamList = {
   // Auth screens
@@ -78,6 +81,9 @@ export type RootStackParamList = {
   SinkingFundDetail: { fundId: string };
   SpendingCharts: undefined;
   CreditCards: undefined;
+  // Habits screens
+  Habits: undefined;
+  MoneyDate: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -301,6 +307,21 @@ export default function RootNavigator() {
             component={CreditCardsScreen}
             options={{
               title: 'Credit Cards',
+            }}
+          />
+          <Stack.Screen
+            name="Habits"
+            component={HabitsScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="MoneyDate"
+            component={HabitsScreen}
+            options={{
+              title: 'Money Date',
+              presentation: 'modal',
             }}
           />
         </Stack.Navigator>
