@@ -45,7 +45,13 @@ import {
 } from '../screens/budget';
 
 // Habits screens
-import { HabitsScreen } from '../screens/habits/HabitsScreen';
+import { HabitsScreen, MoneyDateScreen } from '../screens/habits';
+
+// Milestone screens
+import { SovereigntyLadderScreen, MilestoneHistoryScreen } from '../screens/milestones';
+
+// Settings screens
+import { NotificationSettingsScreen } from '../screens/settings';
 
 // Type definitions for navigation
 export type RootStackParamList = {
@@ -84,6 +90,11 @@ export type RootStackParamList = {
   // Habits screens
   Habits: undefined;
   MoneyDate: undefined;
+  // Milestone screens
+  SovereigntyLadder: undefined;
+  MilestoneHistory: undefined;
+  // Settings screens
+  NotificationSettings: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -318,10 +329,34 @@ export default function RootNavigator() {
           />
           <Stack.Screen
             name="MoneyDate"
-            component={HabitsScreen}
+            component={MoneyDateScreen}
             options={{
               title: 'Money Date',
               presentation: 'modal',
+              headerShown: false,
+            }}
+          />
+          {/* Milestone screens */}
+          <Stack.Screen
+            name="SovereigntyLadder"
+            component={SovereigntyLadderScreen}
+            options={{
+              title: 'Sovereignty Ladder',
+            }}
+          />
+          <Stack.Screen
+            name="MilestoneHistory"
+            component={MilestoneHistoryScreen}
+            options={{
+              title: 'Achievement History',
+            }}
+          />
+          {/* Settings screens */}
+          <Stack.Screen
+            name="NotificationSettings"
+            component={NotificationSettingsScreen}
+            options={{
+              title: 'Notifications',
             }}
           />
         </Stack.Navigator>
