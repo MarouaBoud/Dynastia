@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider } from './src/contexts/AuthContext';
 import { BudgetProvider } from './src/contexts/BudgetContext';
+import { HabitProvider } from './src/contexts/HabitContext';
 import { ThemeProvider, useColors, useIsDarkMode } from './src/theme';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import RootNavigator from './src/navigation/RootNavigator';
@@ -25,7 +26,9 @@ export default function App() {
       <ThemeProvider>
         <AuthProvider>
           <BudgetProvider>
-            <AppContent />
+            <HabitProvider>
+              <AppContent />
+            </HabitProvider>
           </BudgetProvider>
         </AuthProvider>
       </ThemeProvider>
