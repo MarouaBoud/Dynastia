@@ -7,10 +7,13 @@
 
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
+import { useCoaching } from '../../contexts/CoachingContext';
 import { useColors } from '../../theme';
 import { tokens } from '../../theme/tokens';
 import { Button } from '../../components/ui/Button';
+import { CoachPrompt } from '../../components/coaching';
 import { hapticLight } from '../../utils/haptics';
 
 interface HomeScreenProps {
@@ -52,12 +55,13 @@ function FeatureCard({ emoji, title, subtitle, accentColor, onPress }: FeatureCa
 export default function HomeScreen({ navigation }: HomeScreenProps) {
   const colors = useColors();
   const { signOut, state } = useAuth();
+  const { coaching, dismissCoaching } = useCoaching();
 
   const handleLogout = async () => {
     await signOut();
   };
 
-  const features = [
+  const mainFeatures = [
     {
       emoji: '💰',
       title: 'Budget',
@@ -88,6 +92,21 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     },
   ];
 
+  const journeyFeatures = [
+    {
+      icon: 'map' as const,
+      title: 'Money Map',
+      subtitle: 'See your path to sovereignty',
+      screen: 'MoneyMap',
+    },
+    {
+      icon: 'trending-up' as const,
+      title: 'What If?',
+      subtitle: 'Run scenario simulations',
+      screen: 'Scenario',
+    },
+  ];
+
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -102,8 +121,46 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         </Text>
       </View>
 
+      {/* Contextual Coach Prompt */}
+      {coaching?.hasMessage && (
+        <CoachPrompt
+          coaching={coaching}
+          onDismiss={dismissCoaching}
+          style={{ marginBottom: tokens.spacing.md }}
+        />
+      )}
+
+      {/* Financial Intelligence Section */}
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>
+          Your Financial Journey
+        </Text>
+        <View style={styles.journeyRow}>
+          {journeyFeatures.map((feature) => (
+            <TouchableOpacity
+              key={feature.screen}
+              style={[styles.journeyCard, { backgroundColor: colors.card }]}
+              onPress={() => {
+                hapticLight();
+                navigation.navigate(feature.screen as any);
+              }}
+              activeOpacity={0.7}
+            >
+              <Feather name={feature.icon} size={24} color={colors.primary} />
+              <Text style={[styles.journeyTitle, { color: colors.text }]}>
+                {feature.title}
+              </Text>
+              <Text style={[styles.journeySubtitle, { color: colors.textSecondary }]}>
+                {feature.subtitle}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* Main Features */}
       <View style={styles.cardsGrid}>
-        {features.map((feature) => (
+        {mainFeatures.map((feature) => (
           <FeatureCard
             key={feature.screen}
             emoji={feature.emoji}
@@ -145,6 +202,41 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: tokens.typography.sizes.bodyLg.fontSize,
+  },
+  section: {
+    marginBottom: tokens.spacing.xl,
+  },
+  sectionTitle: {
+    fontSize: tokens.typography.sizes.bodyLg.fontSize,
+    fontWeight: tokens.typography.weights.semibold,
+    marginBottom: tokens.spacing.md,
+  },
+  journeyRow: {
+    flexDirection: 'row',
+    gap: tokens.spacing.md,
+  },
+  journeyCard: {
+    flex: 1,
+    padding: tokens.spacing.md,
+    borderRadius: tokens.radius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 120,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  journeyTitle: {
+    fontSize: tokens.typography.sizes.bodyMd.fontSize,
+    fontWeight: tokens.typography.weights.semibold,
+    marginTop: tokens.spacing.sm,
+  },
+  journeySubtitle: {
+    fontSize: tokens.typography.sizes.bodySm.fontSize,
+    textAlign: 'center',
+    marginTop: tokens.spacing.xs,
   },
   cardsGrid: {
     flexDirection: 'row',
