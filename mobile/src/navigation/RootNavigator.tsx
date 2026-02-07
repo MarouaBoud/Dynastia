@@ -51,10 +51,13 @@ import { HabitsScreen, MoneyDateScreen } from '../screens/habits';
 import { SovereigntyLadderScreen, MilestoneHistoryScreen } from '../screens/milestones';
 
 // Settings screens
-import { NotificationSettingsScreen } from '../screens/settings';
+import { NotificationSettingsScreen, CountrySettingsScreen } from '../screens/settings';
 
 // Projections screens
 import { MoneyMapScreen, ScenarioScreen } from '../screens/projections';
+
+// Wealth screens
+import { WealthPathScreen, InvestingLearnScreen } from '../screens/wealth';
 
 // Type definitions for navigation
 export type RootStackParamList = {
@@ -98,9 +101,13 @@ export type RootStackParamList = {
   MilestoneHistory: undefined;
   // Settings screens
   NotificationSettings: undefined;
+  CountrySettings: undefined;
   // Projections screens
   MoneyMap: undefined;
   Scenario: undefined;
+  // Wealth screens
+  WealthPath: undefined;
+  InvestingLearn: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -379,6 +386,31 @@ export default function RootNavigator() {
             component={ScenarioScreen}
             options={{
               title: 'What If?',
+              headerShown: true,
+            }}
+          />
+          {/* Wealth screens */}
+          <Stack.Screen
+            name="WealthPath"
+            component={WealthPathScreen}
+            options={{
+              title: 'Wealth Path',
+              headerShown: true,
+            }}
+          />
+          <Stack.Screen
+            name="InvestingLearn"
+            component={InvestingLearnScreen}
+            options={{
+              title: 'Learn to Invest',
+              headerShown: true,
+            }}
+          />
+          <Stack.Screen
+            name="CountrySettings"
+            component={CountrySettingsScreen}
+            options={{
+              title: 'Country Settings',
               headerShown: true,
             }}
           />
