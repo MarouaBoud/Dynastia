@@ -20,6 +20,7 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
         email: true,
         country: true,
         currency: true,
+        secondaryCountry: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -47,7 +48,7 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    const { country, currency } = req.body;
+    const { country, currency, secondaryCountry } = req.body;
 
     // Validate country (ISO 3166-1 alpha-2: 2 uppercase letters)
     if (country !== undefined) {
@@ -65,18 +66,28 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
       }
     }
 
+    // Validate secondaryCountry (ISO 3166-1 alpha-2: 2 uppercase letters or null to clear)
+    if (secondaryCountry !== undefined && secondaryCountry !== null) {
+      if (typeof secondaryCountry !== 'string' || !/^[A-Z]{2}$/.test(secondaryCountry)) {
+        res.status(400).json({ message: 'Invalid secondary country code. Must be 2 uppercase letters (ISO 3166-1 alpha-2)' });
+        return;
+      }
+    }
+
     // Update user
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
         ...(country !== undefined && { country }),
         ...(currency !== undefined && { currency }),
+        ...(secondaryCountry !== undefined && { secondaryCountry: secondaryCountry || null }),
       },
       select: {
         id: true,
         email: true,
         country: true,
         currency: true,
+        secondaryCountry: true,
         createdAt: true,
         updatedAt: true,
       },
