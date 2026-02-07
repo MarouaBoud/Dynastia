@@ -1,0 +1,1 @@
+export { WealthPathScreen } from './WealthPathScreen';
