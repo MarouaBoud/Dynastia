@@ -53,6 +53,9 @@ import { SovereigntyLadderScreen, MilestoneHistoryScreen } from '../screens/mile
 // Settings screens
 import { NotificationSettingsScreen } from '../screens/settings';
 
+// Projections screens
+import { MoneyMapScreen, ScenarioScreen } from '../screens/projections';
+
 // Type definitions for navigation
 export type RootStackParamList = {
   // Auth screens
@@ -95,6 +98,9 @@ export type RootStackParamList = {
   MilestoneHistory: undefined;
   // Settings screens
   NotificationSettings: undefined;
+  // Projections screens
+  MoneyMap: undefined;
+  Scenario: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -357,6 +363,23 @@ export default function RootNavigator() {
             component={NotificationSettingsScreen}
             options={{
               title: 'Notifications',
+            }}
+          />
+          {/* Projections screens */}
+          <Stack.Screen
+            name="MoneyMap"
+            component={MoneyMapScreen}
+            options={{
+              title: 'Money Map',
+              headerShown: true,
+            }}
+          />
+          <Stack.Screen
+            name="Scenario"
+            component={ScenarioScreen}
+            options={{
+              title: 'What If?',
+              headerShown: true,
             }}
           />
         </Stack.Navigator>

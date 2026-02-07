@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { AuthProvider } from './src/contexts/AuthContext';
 import { BudgetProvider } from './src/contexts/BudgetContext';
 import { HabitProvider } from './src/contexts/HabitContext';
+import { CoachingProvider } from './src/contexts/CoachingContext';
 import { ThemeProvider, useColors, useIsDarkMode } from './src/theme';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import RootNavigator from './src/navigation/RootNavigator';
@@ -27,7 +28,9 @@ export default function App() {
         <AuthProvider>
           <BudgetProvider>
             <HabitProvider>
-              <AppContent />
+              <CoachingProvider>
+                <AppContent />
+              </CoachingProvider>
             </HabitProvider>
           </BudgetProvider>
         </AuthProvider>
