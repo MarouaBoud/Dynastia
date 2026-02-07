@@ -33,6 +33,7 @@ import sinkingFundsRoutes from './routes/sinkingFunds';
 import milestonesRoutes from './routes/milestones';
 import habitsRoutes from './routes/habits';
 import projectionsRoutes from './routes/projections';
+import coachingRoutes from './routes/coaching';
 
 // Middleware
 import { httpLogger, logger } from './middleware/logger';
@@ -122,6 +123,7 @@ app.use('/api/sinking-funds', sinkingFundsRoutes);
 app.use('/api/milestones', milestonesRoutes);
 app.use('/api/habits', habitsRoutes);
 app.use('/api/projections', projectionsRoutes);
+app.use('/api/coaching', coachingRoutes);
 
 // =============================================================================
 // Error Handling
