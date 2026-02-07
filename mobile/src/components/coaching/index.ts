@@ -1,0 +1,1 @@
+export { CoachPrompt } from './CoachPrompt';
