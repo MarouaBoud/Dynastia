@@ -107,6 +107,21 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     },
   ];
 
+  const wealthFeatures = [
+    {
+      icon: 'target' as const,
+      title: 'Your Wealth Path',
+      subtitle: 'Tax-advantaged accounts in the right order',
+      screen: 'WealthPath',
+    },
+    {
+      icon: 'book-open' as const,
+      title: 'Learn to Invest',
+      subtitle: 'ETF-first philosophy for long-term wealth',
+      screen: 'InvestingLearn',
+    },
+  ];
+
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -147,6 +162,34 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
               activeOpacity={0.7}
             >
               <Feather name={feature.icon} size={24} color={colors.primary} />
+              <Text style={[styles.journeyTitle, { color: colors.text }]}>
+                {feature.title}
+              </Text>
+              <Text style={[styles.journeySubtitle, { color: colors.textSecondary }]}>
+                {feature.subtitle}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* Build Wealth Section */}
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>
+          Build Wealth
+        </Text>
+        <View style={styles.journeyRow}>
+          {wealthFeatures.map((feature) => (
+            <TouchableOpacity
+              key={feature.screen}
+              style={[styles.journeyCard, { backgroundColor: colors.card }]}
+              onPress={() => {
+                hapticLight();
+                navigation.navigate(feature.screen as any);
+              }}
+              activeOpacity={0.7}
+            >
+              <Feather name={feature.icon} size={24} color={colors.success} />
               <Text style={[styles.journeyTitle, { color: colors.text }]}>
                 {feature.title}
               </Text>
