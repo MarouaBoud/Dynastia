@@ -29,6 +29,7 @@ import {
   TIER_MILESTONES
 } from '../../services/milestone.service';
 import { useBudget } from '../../contexts/BudgetContext';
+import { getAssets, Asset } from '../../services/assets.service';
 
 export function MoneyMapScreen() {
   const { theme } = useTheme();
@@ -71,10 +72,26 @@ export function MoneyMapScreen() {
         const monthlyExpenses = Number(budget.billsAmount || 0) + Number(budget.lifestyleAmount || 0);
         const monthlySavings = Number(budget.savingsAmount || 0);
 
+        // Fetch real asset data for FI projection
+        let currentSavings = 0;
+        let currentInvestments = 0;
+        try {
+          const assets = await getAssets();
+          currentSavings = assets
+            .filter((a: Asset) => a.type === 'Cash')
+            .reduce((sum: number, a: Asset) => sum + a.value, 0);
+          currentInvestments = assets
+            .filter((a: Asset) => a.type === 'Investments')
+            .reduce((sum: number, a: Asset) => sum + a.value, 0);
+        } catch (error) {
+          console.error('Failed to load assets for FI projection:', error);
+          // Falls back to 0 (current behavior)
+        }
+
         const projection = await getFIProjection({
           monthlyExpenses,
-          currentSavings: 0, // Would come from assets
-          currentInvestments: 0, // Would come from assets
+          currentSavings,
+          currentInvestments,
           monthlySavingsRate: monthlySavings
         });
         setFIProjection(projection);
