@@ -33,6 +33,7 @@ export interface BannedPhraseResult {
  * containsBannedPhrase
  *
  * Checks if text contains any banned phrases (case-insensitive).
+ * Excludes matches that are part of approved POWER_PHRASES.
  *
  * @param text - Text to check
  * @returns Object with hasBanned flag and array of found phrases
@@ -40,14 +41,34 @@ export interface BannedPhraseResult {
  * @example
  * containsBannedPhrase("Invalid credentials")
  * // Returns: { hasBanned: true, found: ["invalid"] }
+ *
+ * containsBannedPhrase("Let's try again")
+ * // Returns: { hasBanned: false, found: [] } - "try again" is part of power phrase
  */
 export function containsBannedPhrase(text: string): BannedPhraseResult {
   const lowerText = text.toLowerCase();
   const found: string[] = [];
 
+  // First check if text contains any power phrases (these are safe)
+  const containsPowerPhrase = (bannedPhrase: string): boolean => {
+    // Check if this banned phrase is part of a larger power phrase in the text
+    for (const powerPhrase of POWER_PHRASES) {
+      const lowerPower = powerPhrase.toLowerCase();
+      // If the power phrase contains the banned phrase AND the text contains the power phrase
+      if (lowerPower.includes(bannedPhrase.toLowerCase()) && lowerText.includes(lowerPower)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   for (const phrase of BANNED_PHRASES) {
-    if (lowerText.includes(phrase.toLowerCase())) {
-      found.push(phrase);
+    const lowerPhrase = phrase.toLowerCase();
+    if (lowerText.includes(lowerPhrase)) {
+      // Skip if this is part of an approved power phrase
+      if (!containsPowerPhrase(phrase)) {
+        found.push(phrase);
+      }
     }
   }
 
