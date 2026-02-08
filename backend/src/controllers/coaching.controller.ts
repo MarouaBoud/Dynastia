@@ -2,27 +2,34 @@
  * Coaching Controller
  *
  * Handles AI coaching requests using hybrid rule + LLM approach.
- * Rate-limited to protect LLM API costs.
+ * Now with Opik tracing for full LLM observability.
+ *
+ * Uses Groq (free tier) for cost-effective coaching.
  */
 
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { ruleEngine, CoachingContext } from '../services/coaching/rule-engine';
 import { createPromptBuilder } from '../services/coaching/prompt-builder';
-import { ClaudeClient } from '../services/llm/claude-client';
+import { getGroqClient, GroqClient } from '../services/llm/groq-client';
+import { traceCoachingInteraction, buildUserContext, determineTier, getMilestoneContext } from '../services/opik/tracing';
+import { flushOpik } from '../services/opik/opik-client';
 
 const prisma = new PrismaClient();
 
-// Initialize LLM client (only if API key present)
-const claudeClient = process.env.ANTHROPIC_API_KEY
-  ? new ClaudeClient(process.env.ANTHROPIC_API_KEY)
-  : null;
+// Initialize Groq LLM client (free tier: 14,400 requests/day)
+const groqClient = getGroqClient();
 
-const promptBuilder = claudeClient ? createPromptBuilder(claudeClient) : null;
+const promptBuilder = groqClient ? createPromptBuilder(groqClient) : null;
 
 /**
  * POST /api/coaching/prompt
  * Get contextual coaching message based on user's current state.
+ *
+ * Now with full Opik tracing for LLM observability:
+ * - Traces every LLM call with context
+ * - Runs evaluations (emotional safety, action clarity, etc.)
+ * - Logs scores for hackathon dashboard
  */
 export async function getCoachingPrompt(req: Request, res: Response) {
   try {
@@ -30,6 +37,31 @@ export async function getCoachingPrompt(req: Request, res: Response) {
 
     // Gather user context from database
     const context = await gatherCoachingContext(userId);
+
+    // Get user's completed milestones for tier determination
+    const milestones = await prisma.milestone.findMany({
+      where: { userId }
+    });
+    const completedMilestoneTypes = milestones.map(m => m.type);
+
+    // Build user context for Opik tracing
+    const tier = determineTier(completedMilestoneTypes);
+    const milestoneContext = getMilestoneContext(completedMilestoneTypes);
+
+    // Get user's country (default to US if not set)
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { country: true }
+    });
+
+    const userContext = buildUserContext(
+      userId,
+      tier,
+      milestoneContext.current,
+      milestoneContext.next,
+      user?.country || 'US',
+      'coaching_chat'
+    );
 
     // Determine what to coach about (rules-based)
     const decision = ruleEngine.getTopDecision(context);
@@ -42,21 +74,61 @@ export async function getCoachingPrompt(req: Request, res: Response) {
       });
     }
 
-    // Generate message using LLM (if available) or fallback
+    // Generate message using LLM with Opik tracing
     let message: string;
-    if (promptBuilder) {
-      message = await promptBuilder.generateMessage(decision);
+    let traceId: string | null = null;
+    let evaluationScores: Record<string, number> = {};
+
+    if (promptBuilder && groqClient) {
+      // Get full generation result with metadata
+      const result = await promptBuilder.generateMessageWithMetadata(decision);
+
+      // Trace the interaction with Opik
+      const traced = await traceCoachingInteraction(
+        userContext,
+        decision.type,
+        result.systemPrompt,
+        result.userPrompt,
+        {
+          content: result.message,
+          tokensUsed: result.tokensUsed,
+          latencyMs: result.latencyMs,
+          model: result.model
+        }
+      );
+
+      message = traced.message;
+      traceId = traced.traceId;
+      evaluationScores = {
+        emotional_safety: traced.evaluations.emotional_safety,
+        one_action_clarity: traced.evaluations.one_action_clarity,
+        tier_alignment: traced.evaluations.tier_alignment,
+        identity_building: traced.evaluations.identity_building,
+        overwhelm_prevention: traced.evaluations.overwhelm_prevention,
+        composite_score: traced.evaluations.composite_score
+      };
+
+      console.log(`[Coaching] Generated message for ${decision.type} | Composite score: ${traced.evaluations.composite_score}`);
     } else {
       // Fallback for development without API key
       message = getFallbackMessage(decision.type);
     }
+
+    // Flush Opik traces (ensure they're sent before response)
+    await flushOpik();
 
     res.json({
       hasMessage: true,
       message,
       type: decision.type,
       priority: decision.priority,
-      data: decision.data
+      data: decision.data,
+      // Include trace info for debugging (can be removed in production)
+      _trace: process.env.NODE_ENV === 'development' ? {
+        traceId,
+        tier,
+        evaluations: evaluationScores
+      } : undefined
     });
   } catch (error) {
     console.error('Coaching prompt error:', error);
