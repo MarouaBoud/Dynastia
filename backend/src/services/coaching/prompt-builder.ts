@@ -3,10 +3,19 @@
  *
  * Constructs LLM prompts for coaching messages.
  * Enforces emotional safety rules (PSYCH-01 to PSYCH-05, COACH-05).
+ *
+ * Now supports multiple LLM backends (Claude, Groq) with Opik tracing.
  */
 
-import { ClaudeClient } from '../llm/claude-client';
 import { CoachingDecision, CoachingType } from './rule-engine';
+import { LLMResponse } from '../llm/groq-client';
+
+/**
+ * LLM client interface - any LLM provider must implement this
+ */
+export interface LLMClient {
+  generateCoachingMessage(systemPrompt: string, userPrompt: string): Promise<LLMResponse | string>;
+}
 
 /**
  * System prompt enforcing emotional safety.
@@ -124,11 +133,23 @@ Craft a 2-sentence warm check-in that:
 2. Offers a simple positive affirmation`
 };
 
-export class PromptBuilder {
-  private claudeClient: ClaudeClient;
+/**
+ * Result from prompt generation with full context for tracing
+ */
+export interface PromptGenerationResult {
+  message: string;
+  systemPrompt: string;
+  userPrompt: string;
+  tokensUsed: number;
+  latencyMs: number;
+  model: string;
+}
 
-  constructor(claudeClient: ClaudeClient) {
-    this.claudeClient = claudeClient;
+export class PromptBuilder {
+  private llmClient: LLMClient;
+
+  constructor(llmClient: LLMClient) {
+    this.llmClient = llmClient;
   }
 
   /**
@@ -143,16 +164,62 @@ export class PromptBuilder {
   }
 
   /**
+   * Get the system prompt (for tracing)
+   */
+  getSystemPrompt(): string {
+    return COACHING_SYSTEM_PROMPT;
+  }
+
+  /**
    * Generate full coaching message using LLM.
+   * Returns full result with metadata for Opik tracing.
    */
   async generateMessage(decision: CoachingDecision): Promise<string> {
     const userPrompt = this.buildPrompt(decision);
-    return this.claudeClient.generateCoachingMessage(
+    const result = await this.llmClient.generateCoachingMessage(
       COACHING_SYSTEM_PROMPT,
       userPrompt
     );
+
+    // Handle both string (old Claude) and LLMResponse (new Groq) returns
+    if (typeof result === 'string') {
+      return result;
+    }
+    return result.content;
+  }
+
+  /**
+   * Generate message with full metadata for tracing
+   */
+  async generateMessageWithMetadata(decision: CoachingDecision): Promise<PromptGenerationResult> {
+    const userPrompt = this.buildPrompt(decision);
+    const result = await this.llmClient.generateCoachingMessage(
+      COACHING_SYSTEM_PROMPT,
+      userPrompt
+    );
+
+    // Handle both string (old Claude) and LLMResponse (new Groq) returns
+    if (typeof result === 'string') {
+      return {
+        message: result,
+        systemPrompt: COACHING_SYSTEM_PROMPT,
+        userPrompt,
+        tokensUsed: 0,
+        latencyMs: 0,
+        model: 'unknown'
+      };
+    }
+
+    return {
+      message: result.content,
+      systemPrompt: COACHING_SYSTEM_PROMPT,
+      userPrompt,
+      tokensUsed: result.tokensUsed,
+      latencyMs: result.latencyMs,
+      model: result.model
+    };
   }
 }
 
-export const createPromptBuilder = (claudeClient: ClaudeClient) =>
-  new PromptBuilder(claudeClient);
+export const createPromptBuilder = (llmClient: LLMClient) =>
+  new PromptBuilder(llmClient);

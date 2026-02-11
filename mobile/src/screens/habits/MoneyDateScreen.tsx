@@ -1,11 +1,11 @@
 /**
- * Money Date Screen
+ * Money Date Screen (Hero Ritual)
  *
- * Weekly check-in ritual screen (HABIT-02, RICHHABIT-01).
- * Guides users through their Money Date with checklist and celebrates completion.
+ * This is the sacred weekly ritual for the Aspiring Empire Builder.
+ * It is designed to be calm, focusing, and empowering.
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,12 +13,15 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Alert,
+  Animated,
+  StatusBar,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { useColors } from '../../theme';
 import { useHabits } from '../../contexts/HabitContext';
 import { MoneyDateChecklist } from '../../components/habits/MoneyDateChecklist';
+import { tokens } from '../../theme/tokens';
 
 export function MoneyDateScreen() {
   const colors = useColors();
@@ -31,6 +34,15 @@ export function MoneyDateScreen() {
   } = useHabits();
 
   const [completed, setCompleted] = useState(false);
+  const [fadeAnim] = useState(new Animated.Value(0));
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 600,
+      useNativeDriver: true,
+    }).start();
+  }, []);
 
   const handleComplete = useCallback(async (checkedItems: string[]) => {
     try {
@@ -38,8 +50,8 @@ export function MoneyDateScreen() {
       setCompleted(true);
     } catch (error) {
       Alert.alert(
-        'Oops!',
-        "We couldn't save your check-in. Let's try again.",
+        'Connection Issue',
+        "We couldn't save your ritual. Please check your internet and try again.",
         [{ text: 'OK' }]
       );
     }
@@ -49,113 +61,120 @@ export function MoneyDateScreen() {
     navigation.goBack();
   };
 
-  // Already completed this week
+  // ---------------------------------------------------------------------------
+  // RENDER: COMPLETED STATE (The Victory Lap)
+  // ---------------------------------------------------------------------------
   if (completedThisWeek && !completed) {
+    // If user re-visits the screen after completing
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Feather name="x" size={24} color={colors.text} />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.completedContainer}>
-          <View style={[styles.checkCircle, { backgroundColor: colors.success }]}>
-            <Feather name="check" size={48} color="#fff" />
-          </View>
-          <Text style={[styles.completedTitle, { color: colors.text }]}>
-            You're all set!
-          </Text>
-          <Text style={[styles.completedSubtitle, { color: colors.textSecondary }]}>
-            You've completed your Money Date this week.{'\n'}
-            See you next week!
-          </Text>
-
-          {currentStreak > 0 && (
-            <View style={[styles.streakBadge, { backgroundColor: colors.primaryLight }]}>
-              <Feather name="zap" size={16} color={colors.primary} />
-              <Text style={[styles.streakText, { color: colors.primary }]}>
-                {currentStreak} week streak
-              </Text>
-            </View>
-          )}
-
-          <TouchableOpacity
-            style={[styles.doneButton, { backgroundColor: colors.primary }]}
-            onPress={handleDone}
-          >
-            <Text style={styles.doneButtonText}>Done</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        {/* Re-using the celebration view for consistency */}
+        <CelebrationView
+          colors={colors}
+          currentStreak={currentStreak}
+          onDone={handleDone}
+          alreadyDone={true}
+        />
+      </View>
     );
   }
 
-  // Just completed
   if (completed) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={styles.celebrationContainer}>
-          <View style={[styles.checkCircle, { backgroundColor: colors.success }]}>
-            <Feather name="check" size={48} color="#fff" />
-          </View>
-          <Text style={[styles.celebrationTitle, { color: colors.text }]}>
-            Money Date Complete!
-          </Text>
-          <Text style={[styles.celebrationSubtitle, { color: colors.textSecondary }]}>
-            Great job showing up for yourself today.{'\n'}
-            This is how wealth gets built.
-          </Text>
-
-          {currentStreak > 0 && (
-            <View style={[styles.streakBadge, { backgroundColor: colors.primaryLight }]}>
-              <Feather name="zap" size={16} color={colors.primary} />
-              <Text style={[styles.streakText, { color: colors.primary }]}>
-                {currentStreak} week streak!
-              </Text>
-            </View>
-          )}
-
-          <TouchableOpacity
-            style={[styles.doneButton, { backgroundColor: colors.primary }]}
-            onPress={handleDone}
-          >
-            <Text style={styles.doneButtonText}>Done</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+      <View style={[styles.container, { backgroundColor: colors.success + '10' }]}>
+        <CelebrationView
+          colors={colors}
+          currentStreak={currentStreak}
+          onDone={handleDone}
+          alreadyDone={false}
+        />
+      </View>
     );
   }
 
-  // Check-in flow
+  // ---------------------------------------------------------------------------
+  // RENDER: CHECK-IN RITUAL
+  // ---------------------------------------------------------------------------
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle="dark-content" />
+
+      {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          hitSlop={tokens.spacing.sm}
+          style={styles.closeButton}
         >
-          <Feather name="x" size={24} color={colors.text} />
+          <Feather name="x" size={24} color={colors.textSecondary} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Money Date</Text>
-        <View style={{ width: 24 }} />
+        <Text style={[styles.headerTitle, { color: colors.textSecondary }]}>
+          WEEKLY RITUAL
+        </Text>
+        <View style={{ width: 44 }} />
       </View>
 
-      <View style={styles.intro}>
-        <Text style={[styles.introTitle, { color: colors.text }]}>
-          Let's check in with your money
-        </Text>
-        <Text style={[styles.introSubtitle, { color: colors.textSecondary }]}>
-          Take 10 minutes to review, plan, and celebrate.{'\n'}
-          No judgment. Just awareness.
-        </Text>
-      </View>
+      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+        {/* INTRO */}
+        <View style={styles.intro}>
+          <Text style={[styles.introTitle, { color: colors.text }]}>
+            Your Money Date
+          </Text>
+          <Text style={[styles.introSubtitle, { color: colors.textSecondary }]}>
+            Review the past. Plan the future. {'\n'}
+            Build your empire, one week at a time.
+          </Text>
+        </View>
 
-      <View style={styles.checklistContainer}>
-        <MoneyDateChecklist onComplete={handleComplete} isLoading={isCheckingIn} />
+        {/* CHECKLIST */}
+        <View style={styles.checklistContainer}>
+          <MoneyDateChecklist onComplete={handleComplete} isLoading={isCheckingIn} />
+        </View>
+      </Animated.View>
+    </SafeAreaView>
+  );
+}
+
+// Sub-component for Celebration to keep main component clean
+function CelebrationView({ colors, currentStreak, onDone, alreadyDone }: any) {
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.celebrationContainer}>
+        <View style={[styles.iconCircle, { backgroundColor: colors.success }]}>
+          <Feather name="check" size={48} color="#fff" />
+        </View>
+
+        <Text style={[styles.celebrationTitle, { color: colors.text }]}>
+          {alreadyDone ? "You're All Set" : "Ritual Complete"}
+        </Text>
+
+        <Text style={[styles.celebrationSubtitle, { color: colors.textSecondary }]}>
+          {alreadyDone
+            ? "You've already taken control this week.\nSee you next week."
+            : "You just took a concrete step toward financial freedom. Be proud."}
+        </Text>
+
+        {currentStreak > 0 && (
+          <View style={[styles.streakCard, { backgroundColor: colors.card, borderColor: colors.primary }]}>
+            <Feather name="zap" size={24} color={colors.primary} />
+            <View>
+              <Text style={[styles.streakCount, { color: colors.primary }]}>
+                {currentStreak} Week Streak
+              </Text>
+              <Text style={[styles.streakLabel, { color: colors.textSecondary }]}>
+                Consistency is the key to wealth.
+              </Text>
+            </View>
+          </View>
+        )}
+
+        <TouchableOpacity
+          style={[styles.primaryButton, { backgroundColor: colors.primary }]}
+          onPress={onDone}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.primaryButtonText}>Return to Empire</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -165,25 +184,39 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  content: {
+    flex: 1,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  closeButton: {
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: -12,
   },
   headerTitle: {
-    fontSize: 17,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
   },
   intro: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+    paddingTop: 8,
   },
   introTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '700',
-    marginBottom: 8,
+    marginBottom: 12,
+    letterSpacing: -0.5,
   },
   introSubtitle: {
     fontSize: 16,
@@ -191,74 +224,69 @@ const styles = StyleSheet.create({
   },
   checklistContainer: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: 24,
   },
-  completedContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-  },
+  // Celebration Styles
   celebrationContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 32,
   },
-  checkCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+  iconCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
-  },
-  completedTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  completedSubtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 24,
+    marginBottom: 32,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
   },
   celebrationTitle: {
-    fontSize: 28,
-    fontWeight: '700',
+    fontSize: 32,
+    fontWeight: '800',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
+    letterSpacing: -1,
   },
   celebrationSubtitle: {
     fontSize: 16,
     textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 24,
+    lineHeight: 26,
+    marginBottom: 40,
   },
-  streakBadge: {
+  streakCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginBottom: 32,
-    gap: 6,
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 48,
+    borderWidth: 1,
+    gap: 16,
+    width: '100%',
   },
-  streakText: {
-    fontSize: 15,
-    fontWeight: '600',
+  streakCount: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 4,
   },
-  doneButton: {
-    paddingVertical: 16,
-    paddingHorizontal: 48,
-    borderRadius: 12,
+  streakLabel: {
+    fontSize: 13,
   },
-  doneButtonText: {
+  primaryButton: {
+    width: '100%',
+    paddingVertical: 18,
+    borderRadius: 16,
+    alignItems: 'center',
+  },
+  primaryButtonText: {
     color: '#fff',
     fontSize: 17,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });
 

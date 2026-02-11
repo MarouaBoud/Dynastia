@@ -47,6 +47,17 @@ export default function SignupScreen({ navigation }: SignupScreenProps) {
       return;
     }
 
+    // Password must contain both letters and numbers
+    const hasLetter = /[a-zA-Z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    if (!hasLetter || !hasNumber) {
+      Alert.alert(
+        'Password Needs Variety',
+        "Let's make your password stronger with a mix of letters and numbers."
+      );
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -109,7 +120,7 @@ export default function SignupScreen({ navigation }: SignupScreenProps) {
             onChangeText={setPassword}
             secureTextEntry
             autoComplete="password"
-            helperText="Choose a strong password to keep your data safe"
+            helperText="At least 8 characters with letters and numbers"
           />
 
           <Button

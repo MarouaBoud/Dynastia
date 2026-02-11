@@ -17,6 +17,7 @@ model User {
   totpSecret       String?             @db.VarChar(255)
   country          String?             @default("US") @db.VarChar(2)
   currency         String?             @default("USD") @db.VarChar(3)
+  secondaryCountry String?             @db.VarChar(2)  // For expats with dual-country needs
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
   transactions     Transaction[]

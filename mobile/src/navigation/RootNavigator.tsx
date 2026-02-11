@@ -3,384 +3,337 @@ import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '../contexts/AuthContext';
+import { useColors } from '../theme';
 
 // Auth screens
 import LoginScreen from '../screens/auth/LoginScreen';
 import SignupScreen from '../screens/auth/SignupScreen';
 import TwoFactorScreen from '../screens/auth/TwoFactorScreen';
-
-// Onboarding screens
-import CountryDetectionScreen from '../screens/onboarding/CountryDetectionScreen';
-
-// App screens
-import HomeScreen from '../screens/app/HomeScreen';
-import SecuritySettingsScreen from '../screens/app/SecuritySettingsScreen';
 import TwoFactorSetupScreen from '../screens/auth/TwoFactorSetupScreen';
 
-// Transaction screens
-import { TransactionListScreen } from '../screens/transactions/TransactionListScreen';
-import { AddTransactionScreen } from '../screens/transactions/AddTransactionScreen';
-import { TransactionDetailScreen } from '../screens/transactions/TransactionDetailScreen';
+// Onboarding screens
+import MoneyBlueprintScreen from '../screens/onboarding/MoneyBlueprintScreen';
 
-// Net Worth screens
+// Main app screens
+import HomeScreen from '../screens/HomeScreen';
+
+// Net Worth screens (named exports)
 import { NetWorthDashboard } from '../screens/networth/NetWorthDashboard';
 import { AddAssetScreen } from '../screens/networth/AddAssetScreen';
 import { AddLiabilityScreen } from '../screens/networth/AddLiabilityScreen';
 import { AssetDetailScreen } from '../screens/networth/AssetDetailScreen';
 import { LiabilityDetailScreen } from '../screens/networth/LiabilityDetailScreen';
 
-// Budget screens
-import {
-  BudgetSetupIncomeScreen,
-  BudgetSetupAllocationScreen,
-  BudgetDashboardScreen,
-  BillsListScreen,
-  AddBillScreen,
-  BillDetailScreen,
-  SinkingFundsScreen,
-  AddSinkingFundScreen,
-  SinkingFundDetailScreen,
-  SpendingChartsScreen,
-  CreditCardsScreen,
-} from '../screens/budget';
+// Settings screens
+import SecuritySettingsScreen from '../screens/app/SecuritySettingsScreen';
+import NotificationSettingsScreen from '../screens/settings/NotificationSettingsScreen';
+import CountrySettingsScreen from '../screens/settings/CountrySettingsScreen';
+
+// Budget screens (named exports)
+import { BudgetDashboardScreen } from '../screens/budget/BudgetDashboardScreen';
+import { BudgetSetupIncomeScreen } from '../screens/budget/BudgetSetupIncomeScreen';
+import { BudgetSetupAllocationScreen } from '../screens/budget/BudgetSetupAllocationScreen';
+import { BillsListScreen } from '../screens/budget/BillsListScreen';
+import { AddBillScreen } from '../screens/budget/AddBillScreen';
+import { BillDetailScreen } from '../screens/budget/BillDetailScreen';
+import { SinkingFundsScreen } from '../screens/budget/SinkingFundsScreen';
+import { AddSinkingFundScreen } from '../screens/budget/AddSinkingFundScreen';
+import { SinkingFundDetailScreen } from '../screens/budget/SinkingFundDetailScreen';
+import { SpendingChartsScreen } from '../screens/budget/SpendingChartsScreen';
+import { CreditCardsScreen } from '../screens/budget/CreditCardsScreen';
 
 // Habits screens
-import { HabitsScreen, MoneyDateScreen } from '../screens/habits';
+import { HabitsScreen } from '../screens/habits/HabitsScreen';
+import { MoneyDateScreen } from '../screens/habits/MoneyDateScreen';
 
 // Milestone screens
-import { SovereigntyLadderScreen, MilestoneHistoryScreen } from '../screens/milestones';
-
-// Settings screens
-import { NotificationSettingsScreen } from '../screens/settings';
+import { SovereigntyLadderScreen } from '../screens/milestones/SovereigntyLadderScreen';
+import { MilestoneHistoryScreen } from '../screens/milestones/MilestoneHistoryScreen';
 
 // Projections screens
-import { MoneyMapScreen, ScenarioScreen } from '../screens/projections';
+import { MoneyMapScreen } from '../screens/projections/MoneyMapScreen';
+import { ScenarioScreen } from '../screens/projections/ScenarioScreen';
 
-// Type definitions for navigation
+// Wealth screens
+import { WealthPathScreen } from '../screens/wealth/WealthPathScreen';
+import { InvestingLearnScreen } from '../screens/wealth/InvestingLearnScreen';
+
+// Navigation types
 export type RootStackParamList = {
-  // Auth screens
+  // Auth
   Login: undefined;
   Signup: undefined;
-  TwoFactor: undefined;
-  // Onboarding screens
-  CountryDetection: undefined;
-  // App screens
-  Home: undefined;
-  SecuritySettings: undefined;
+  TwoFactor: { userId: string };
   TwoFactorSetup: undefined;
-  // Transaction screens
-  TransactionList: undefined;
-  AddTransaction: undefined;
-  TransactionDetail: { transactionId: string };
-  // Net Worth screens
+
+  // Onboarding
+  MoneyBlueprint: undefined;
+
+  // Main
+  Home: undefined;
+  MoneyDate: undefined;
+  Habits: undefined;
+
+  // Journey / Milestones
+  SovereigntyLadder: undefined;
+  MilestoneHistory: undefined;
+
+  // Budget
+  BudgetDashboard: undefined;
+  BudgetSetupIncome: undefined;
+  BudgetSetupAllocation: undefined;
+  SpendingCharts: undefined;
+
+  // Bills
+  BillsList: undefined;
+  AddBill: undefined;
+  BillDetail: { billId: string };
+
+  // Sinking Funds
+  SinkingFunds: undefined;
+  AddSinkingFund: undefined;
+  SinkingFundDetail: { fundId: string };
+
+  // Credit Cards
+  CreditCards: undefined;
+
+  // Net Worth
   NetWorthDashboard: undefined;
   AddAsset: undefined;
   AddLiability: undefined;
   AssetDetail: { assetId: string };
   LiabilityDetail: { liabilityId: string };
-  // Budget screens
-  BudgetSetupIncome: undefined;
-  BudgetSetupAllocation: undefined;
-  BudgetDashboard: undefined;
-  BillsList: undefined;
-  AddBill: undefined;
-  BillDetail: { billId: string };
-  SinkingFunds: undefined;
-  AddSinkingFund: undefined;
-  SinkingFundDetail: { fundId: string };
-  SpendingCharts: undefined;
-  CreditCards: undefined;
-  // Habits screens
-  Habits: undefined;
-  MoneyDate: undefined;
-  // Milestone screens
-  SovereigntyLadder: undefined;
-  MilestoneHistory: undefined;
-  // Settings screens
-  NotificationSettings: undefined;
-  // Projections screens
+
+  // Wealth / Investing
+  WealthPath: undefined;
+  InvestingLearn: undefined;
+
+  // Projections
   MoneyMap: undefined;
   Scenario: undefined;
+
+  // Settings
+  NotificationSettings: undefined;
+  CountrySettings: undefined;
+  SecuritySettings: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-/**
- * RootNavigator implements 4-state conditional navigation:
- * 1. Loading: Show splash screen while restoring token
- * 2. Unauthenticated: Show auth stack (Login, Signup) OR 2FA verification
- * 3. Onboarding: Show country detection for new users without country set
- * 4. Authenticated: Show app stack (Home, Settings, etc.)
- *
- * This pattern avoids manual navigation between auth/app stacks which causes errors.
- * State changes in AuthContext automatically trigger navigation.
- */
 export default function RootNavigator() {
   const { state, user } = useAuth();
+  const colors = useColors();
 
-  // State 1: Loading - Restoring token from secure storage
+  // Show loading spinner while checking auth state
   if (state.isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
     <NavigationContainer>
-      {state.userToken === null ? (
-        // User is NOT authenticated
-        state.requires2FA ? (
-          // State 2b: User needs to complete 2FA verification
-          // Render 2FA screen directly (not in navigator) as intermediate state
-          <TwoFactorScreen />
-        ) : (
-          // State 2a: User needs to log in or sign up
-          <Stack.Navigator
-            screenOptions={{
-              headerShown: false,
-            }}
-          >
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Signup" component={SignupScreen} />
-          </Stack.Navigator>
-        )
-      ) : !user?.country ? (
-        // State 3: User is authenticated but needs to complete onboarding
+      {!user ? (
+        // State 1: Not authenticated - show auth stack
         <Stack.Navigator
           screenOptions={{
             headerShown: false,
           }}
         >
-          <Stack.Screen
-            name="CountryDetection"
-            component={CountryDetectionScreen}
-          />
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Signup" component={SignupScreen} />
+          <Stack.Screen name="TwoFactor" component={TwoFactorScreen} />
+        </Stack.Navigator>
+      ) : !user?.country ? (
+        // State 2: Authenticated but needs onboarding
+        <Stack.Navigator
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen name="MoneyBlueprint" component={MoneyBlueprintScreen} />
         </Stack.Navigator>
       ) : (
-        // State 4: User is authenticated and onboarding complete - show app stack
+        // State 3: Authenticated and onboarded - show main app
         <Stack.Navigator
           screenOptions={{
             headerShown: true,
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
           }}
         >
+          {/* Home - The Hero Dashboard */}
           <Stack.Screen
             name="Home"
             component={HomeScreen}
-            options={{
-              headerShown: false,
-            }}
+            options={{ headerShown: false }}
           />
-          <Stack.Screen
-            name="TransactionList"
-            component={TransactionListScreen}
-            options={{
-              headerShown: false,
-            }}
-          />
-          <Stack.Screen
-            name="AddTransaction"
-            component={AddTransactionScreen}
-            options={{
-              title: 'Add Transaction',
-              presentation: 'modal',
-            }}
-          />
-          <Stack.Screen
-            name="TransactionDetail"
-            component={TransactionDetailScreen}
-            options={{
-              title: 'Transaction Details',
-            }}
-          />
-          <Stack.Screen
-            name="NetWorthDashboard"
-            component={NetWorthDashboard}
-            options={{
-              title: 'Net Worth',
-            }}
-          />
-          <Stack.Screen
-            name="AddAsset"
-            component={AddAssetScreen}
-            options={{
-              title: 'Add Asset',
-              presentation: 'modal',
-            }}
-          />
-          <Stack.Screen
-            name="AddLiability"
-            component={AddLiabilityScreen}
-            options={{
-              title: 'Add Liability',
-              presentation: 'modal',
-            }}
-          />
-          <Stack.Screen
-            name="AssetDetail"
-            component={AssetDetailScreen}
-            options={{
-              title: 'Asset Details',
-            }}
-          />
-          <Stack.Screen
-            name="LiabilityDetail"
-            component={LiabilityDetailScreen}
-            options={{
-              title: 'Liability Details',
-            }}
-          />
-          <Stack.Screen
-            name="SecuritySettings"
-            component={SecuritySettingsScreen}
-            options={{
-              title: 'Security Settings',
-            }}
-          />
-          <Stack.Screen
-            name="TwoFactorSetup"
-            component={TwoFactorSetupScreen}
-            options={{
-              title: 'Enable 2FA',
-            }}
-          />
-          <Stack.Screen
-            name="BudgetDashboard"
-            component={BudgetDashboardScreen}
-            options={{
-              title: 'Budget',
-            }}
-          />
-          <Stack.Screen
-            name="BudgetSetupIncome"
-            component={BudgetSetupIncomeScreen}
-            options={{
-              title: 'Set Up Budget',
-              presentation: 'modal',
-            }}
-          />
-          <Stack.Screen
-            name="BudgetSetupAllocation"
-            component={BudgetSetupAllocationScreen}
-            options={{
-              title: 'Choose Allocation',
-              presentation: 'modal',
-            }}
-          />
-          <Stack.Screen
-            name="BillsList"
-            component={BillsListScreen}
-            options={{
-              title: 'Your Bills',
-            }}
-          />
-          <Stack.Screen
-            name="AddBill"
-            component={AddBillScreen}
-            options={{
-              title: 'Add a Bill',
-              presentation: 'modal',
-            }}
-          />
-          <Stack.Screen
-            name="BillDetail"
-            component={BillDetailScreen}
-            options={{
-              title: 'Bill Details',
-            }}
-          />
-          <Stack.Screen
-            name="SinkingFunds"
-            component={SinkingFundsScreen}
-            options={{
-              title: 'Savings Goals',
-            }}
-          />
-          <Stack.Screen
-            name="AddSinkingFund"
-            component={AddSinkingFundScreen}
-            options={{
-              title: 'Create a Savings Goal',
-              presentation: 'modal',
-            }}
-          />
-          <Stack.Screen
-            name="SinkingFundDetail"
-            component={SinkingFundDetailScreen}
-            options={{
-              title: 'Goal Details',
-            }}
-          />
-          <Stack.Screen
-            name="SpendingCharts"
-            component={SpendingChartsScreen}
-            options={{
-              title: 'Spending Breakdown',
-            }}
-          />
-          <Stack.Screen
-            name="CreditCards"
-            component={CreditCardsScreen}
-            options={{
-              title: 'Credit Cards',
-            }}
-          />
-          <Stack.Screen
-            name="Habits"
-            component={HabitsScreen}
-            options={{
-              headerShown: false,
-            }}
-          />
+
+          {/* Money Date - THE Hero Feature */}
           <Stack.Screen
             name="MoneyDate"
             component={MoneyDateScreen}
             options={{
-              title: 'Money Date',
               presentation: 'modal',
               headerShown: false,
             }}
           />
-          {/* Milestone screens */}
+
+          {/* Journey / Milestones */}
           <Stack.Screen
             name="SovereigntyLadder"
             component={SovereigntyLadderScreen}
-            options={{
-              title: 'Sovereignty Ladder',
-            }}
+            options={{ title: 'Your Journey' }}
           />
           <Stack.Screen
             name="MilestoneHistory"
             component={MilestoneHistoryScreen}
-            options={{
-              title: 'Achievement History',
-            }}
+            options={{ title: 'Achievements' }}
           />
-          {/* Settings screens */}
+
+          {/* Habits */}
           <Stack.Screen
-            name="NotificationSettings"
-            component={NotificationSettingsScreen}
-            options={{
-              title: 'Notifications',
-            }}
+            name="Habits"
+            component={HabitsScreen}
+            options={{ headerShown: false }}
           />
-          {/* Projections screens */}
+
+          {/* Budget - Progressive unlock */}
+          <Stack.Screen
+            name="BudgetDashboard"
+            component={BudgetDashboardScreen}
+            options={{ title: 'Budget' }}
+          />
+          <Stack.Screen
+            name="BudgetSetupIncome"
+            component={BudgetSetupIncomeScreen}
+            options={{ title: 'Set Up Budget', presentation: 'modal' }}
+          />
+          <Stack.Screen
+            name="BudgetSetupAllocation"
+            component={BudgetSetupAllocationScreen}
+            options={{ title: 'Choose Allocation', presentation: 'modal' }}
+          />
+          <Stack.Screen
+            name="SpendingCharts"
+            component={SpendingChartsScreen}
+            options={{ title: 'Spending Breakdown' }}
+          />
+
+          {/* Bills - Tier 3 */}
+          <Stack.Screen
+            name="BillsList"
+            component={BillsListScreen}
+            options={{ title: 'Your Bills' }}
+          />
+          <Stack.Screen
+            name="AddBill"
+            component={AddBillScreen}
+            options={{ title: 'Add a Bill', presentation: 'modal' }}
+          />
+          <Stack.Screen
+            name="BillDetail"
+            component={BillDetailScreen}
+            options={{ title: 'Bill Details' }}
+          />
+
+          {/* Sinking Funds - Tier 3 */}
+          <Stack.Screen
+            name="SinkingFunds"
+            component={SinkingFundsScreen}
+            options={{ title: 'Savings Goals' }}
+          />
+          <Stack.Screen
+            name="AddSinkingFund"
+            component={AddSinkingFundScreen}
+            options={{ title: 'Create a Goal', presentation: 'modal' }}
+          />
+          <Stack.Screen
+            name="SinkingFundDetail"
+            component={SinkingFundDetailScreen}
+            options={{ title: 'Goal Details' }}
+          />
+
+          {/* Credit Cards - Tier 2 (if user has debt) */}
+          <Stack.Screen
+            name="CreditCards"
+            component={CreditCardsScreen}
+            options={{ title: 'Credit Cards' }}
+          />
+
+          {/* Net Worth - Tier 4 */}
+          <Stack.Screen
+            name="NetWorthDashboard"
+            component={NetWorthDashboard}
+            options={{ title: 'Net Worth' }}
+          />
+          <Stack.Screen
+            name="AddAsset"
+            component={AddAssetScreen}
+            options={{ title: 'Add Asset', presentation: 'modal' }}
+          />
+          <Stack.Screen
+            name="AddLiability"
+            component={AddLiabilityScreen}
+            options={{ title: 'Add Liability', presentation: 'modal' }}
+          />
+          <Stack.Screen
+            name="AssetDetail"
+            component={AssetDetailScreen}
+            options={{ title: 'Asset Details' }}
+          />
+          <Stack.Screen
+            name="LiabilityDetail"
+            component={LiabilityDetailScreen}
+            options={{ title: 'Liability Details' }}
+          />
+
+          {/* Wealth / Investing - Tier 4 */}
+          <Stack.Screen
+            name="WealthPath"
+            component={WealthPathScreen}
+            options={{ title: 'Build Wealth' }}
+          />
+          <Stack.Screen
+            name="InvestingLearn"
+            component={InvestingLearnScreen}
+            options={{ title: 'Learn to Invest' }}
+          />
+
+          {/* Projections - Tier 5 */}
           <Stack.Screen
             name="MoneyMap"
             component={MoneyMapScreen}
-            options={{
-              title: 'Money Map',
-              headerShown: true,
-            }}
+            options={{ title: 'Money Map' }}
           />
           <Stack.Screen
             name="Scenario"
             component={ScenarioScreen}
-            options={{
-              title: 'What If?',
-              headerShown: true,
-            }}
+            options={{ title: 'What If?' }}
+          />
+
+          {/* Settings */}
+          <Stack.Screen
+            name="NotificationSettings"
+            component={NotificationSettingsScreen}
+            options={{ title: 'Notifications' }}
+          />
+          <Stack.Screen
+            name="CountrySettings"
+            component={CountrySettingsScreen}
+            options={{ title: 'Country Settings' }}
+          />
+          <Stack.Screen
+            name="SecuritySettings"
+            component={SecuritySettingsScreen}
+            options={{ title: 'Security' }}
+          />
+          <Stack.Screen
+            name="TwoFactorSetup"
+            component={TwoFactorSetupScreen}
+            options={{ title: 'Enable 2FA' }}
           />
         </Stack.Navigator>
       )}
@@ -393,6 +346,5 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
   },
 });

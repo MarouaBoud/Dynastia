@@ -150,11 +150,11 @@ describe('validateCopyObject', () => {
     const copyObject = {
       login: {
         title: 'Welcome back',
-        error: 'Invalid credentials', // Bad
+        error: 'Invalid credentials', // Bad - contains banned phrase
       },
       signup: {
         title: 'Create account',
-        error: "We couldn't find that", // Good
+        error: "We couldn't find that. Let's try again.", // Good - safe language with next action
       },
     };
 

@@ -34,6 +34,7 @@ import milestonesRoutes from './routes/milestones';
 import habitsRoutes from './routes/habits';
 import projectionsRoutes from './routes/projections';
 import coachingRoutes from './routes/coaching';
+import wealthRoutes from './routes/wealth';
 
 // Middleware
 import { httpLogger, logger } from './middleware/logger';
@@ -124,6 +125,7 @@ app.use('/api/milestones', milestonesRoutes);
 app.use('/api/habits', habitsRoutes);
 app.use('/api/projections', projectionsRoutes);
 app.use('/api/coaching', coachingRoutes);
+app.use('/api/wealth', wealthRoutes);
 
 // =============================================================================
 // Error Handling
@@ -170,6 +172,7 @@ Available endpoints:
    Milestones: GET /api/milestones
    Habits:    CRUD /api/habits
    Projections: GET /api/projections/fi, POST /api/projections/scenario, /plan
+   Wealth:     GET /api/wealth/guidance, /exchange-rate, POST /api/wealth/convert
 `);
   }
 });

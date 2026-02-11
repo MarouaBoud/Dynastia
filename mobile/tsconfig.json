@@ -5,6 +5,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "jsx": "react-native"
+    "jsx": "react-native",
+    "types": ["jest"]
   }
 }

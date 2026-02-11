@@ -2,7 +2,7 @@
 .planning/
 project.md
 CLAUDE.md
-
+.local/
 # Environment files (NEVER commit)
 .env
 .env.*

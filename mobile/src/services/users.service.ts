@@ -13,6 +13,7 @@ export interface User {
   email: string;
   country: string | null;
   currency: string | null;
+  secondaryCountry: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -21,6 +22,7 @@ export interface User {
 export interface UpdateProfileRequest {
   country?: string;
   currency?: string;
+  secondaryCountry?: string | null;
 }
 
 /**
